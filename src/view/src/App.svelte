@@ -8,14 +8,12 @@
         num++;
     };
 
-    const kalidua = () => {
-        console.log(document.getElementById('kaliduaInput'))
-        console.log(document.getElementById('kaliduaInput').value)
-        fetch(`./kalidua?no=${document.getElementById('kaliduaInput').value}`)
-            .then(res => res.text())
-            .then(res => document.getElementById('kaliduaInput').value = res)
+    const match = () => {
+        fetch(`./match?text=${document.getElementById('matching_text').value}&pattern=${document.getElementById('matching_pattern').value}`)
+            .then(res => res.json())
+            .then(res => document.getElementById('match_result').innerText = res.index_start)
             .catch(err => console.log(`menghangdeh: ${err}`))
-    };
+    }
 </script>
 
 <main>
@@ -36,11 +34,16 @@
     {/each}
 
     <form>
-        <input id="kaliduaInput" type="text" value="2" />
-        <button id="kaliduaButton" type="button" on:click="{kalidua}">
-            Kalikan dua!
+        <label for='matching_text'>text</label>
+        <input id='matching_text' type='text' value='text' />
+        <label for='matching_pattern'>pattern</label>
+        <input id='matching_pattern' type='text' value='pattern' />
+        <br>
+        <button type='button' on:click='{match}'>
+            Find index of pattern on text!
         </button>
     </form>
+    <p>pattern was found on index <span id='match_result'>-1</span></p>
 
     <h5>Brought to you by:</h5>
     {#each kelompok as nama_anggota}

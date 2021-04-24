@@ -1,5 +1,5 @@
 # Bot Wangy
-bot serba pintar dalam mencatat tugas IF ITB'19
+bot serba pintar dalam mencatat tugas IF ITB
 
 ## Cara deploy:
 1. `cd src/view`
