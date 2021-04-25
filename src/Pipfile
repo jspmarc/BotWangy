@@ -5,6 +5,8 @@ name = "pypi"
 
 [packages]
 flask = "*"
+firebase-admin = "*"
+python-dotenv = "*"
 
 [dev-packages]
 

@@ -27,11 +27,11 @@ def find_last_occurance(s: str) -> dict[str, int]:
         jumlah kemunculan terakhir karakter pada key
     '''
     ret = dict()
-    i = 0
 
-    for c in string.ascii_lowercase + string.ascii_uppercase + ' ':
+    for c in string.printable:
         ret[c] = -1
 
+    i = 0
     for c in s:
         ret[c] = i
         i += 1
@@ -39,7 +39,7 @@ def find_last_occurance(s: str) -> dict[str, int]:
     return ret
 
 
-def boyer_moore(pattern: str, text: str) -> int:  # ga yakin returnnya apa
+def boyer_moore(pattern: str, text: str) -> int:
     '''
     Fungsi untuk string matching dengan algoritma Boyer-Moore
 

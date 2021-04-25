@@ -12,7 +12,7 @@ bot serba pintar dalam mencatat tugas IF ITB
 ## Development dengan auto-update/live-update:
 Pada sebuah terminal, jalankan:
 1. `cd src`
-2. `pipenv install`
+2. `pipenv install` (jika belum pernah melakukan ini pada project ini)
 3. `pipenv shell`
 4. `python3 app.py`
 
