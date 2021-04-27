@@ -1,50 +1,4 @@
 <script>
-    export let name; // deklarasi variabel bisa gini (dari main.js)
-    // let num = 0; // atau gini
-
-    // let kelompok = ['Jeane', 'Josep', 'Rei'];
-
-    // const up = () => {
-    //     num++;
-    // };
-
-    // const match = () => {
-    //     fetch(`./match?text=${document.getElementById('matching_text').value}&pattern=${document.getElementById('matching_pattern').value}`)
-    //         .then(res => res.json())
-    //         .then(res => document.getElementById('match_result').innerText = res.index_start)
-    //         .catch(err => console.log(`menghangdeh: ${err}`))
-    // }
-
-    const msgerForm = get(".msger-inputarea");
-    const msgerInput = get(".msger-input");
-    const msgerChat = get(".msger-chat");
-
-    const BOT_MSGS = [
-        "Hi, how are you?",
-        "Ohh... I can't understand what you trying to say. Sorry!",
-        "I like to play games... But I don't know how to play!",
-        "Sorry if my answers are not relevant. :))",
-        "I feel sleepy! :("
-    ];
-
-    // Icons made by Freepik from www.flaticon.com
-    const BOT_IMG = "";
-    const PERSON_IMG = "";
-    const BOT_NAME = "Bot Wangy";
-    const PERSON_NAME = "Mahasiswa";
-
-    msgerForm.addEventListener("submit", event => {
-        event.preventDefault();
-
-        const msgText = msgerInput.value;
-        if (!msgText) return;
-
-        appendMessage(PERSON_NAME, PERSON_IMG, "right", msgText);
-        msgerInput.value = "";
-
-        botResponse();
-    });
-
     function appendMessage(name, img, side, text) {
         //   Simple solution for small apps
         const msgHTML = `
@@ -90,6 +44,44 @@
 
     function random(min, max) {
         return Math.floor(Math.random() * (max - min) + min);
+    }
+
+    export let name; // deklarasi variabel bisa gini (dari main.js)
+
+    const BOT_MSGS = [
+        "Hi, how are you?",
+        "Ohh... I can't understand what you trying to say. Sorry!",
+        "I like to play games... But I don't know how to play!",
+        "Sorry if my answers are not relevant. :))",
+        "I feel sleepy! :("
+    ];
+
+    // Icons made by Freepik from www.flaticon.com
+    const BOT_IMG = "";
+    const PERSON_IMG = "";
+    const BOT_NAME = "Bot Wangy";
+    const PERSON_NAME = "Mahasiswa";
+
+    // setup messenger stuff
+    let msgerForm = null;
+    let msgerInput = null;
+    let msgerChat = null;
+    window.onload = () => {
+        msgerForm = get(".msger-inputarea");
+        msgerInput = get(".msger-input");
+        msgerChat = get(".msger-chat");
+
+        msgerForm.addEventListener("submit", event => {
+            event.preventDefault();
+
+            const msgText = msgerInput.value;
+            if (!msgText) return;
+
+            appendMessage(PERSON_NAME, PERSON_IMG, "right", msgText);
+            msgerInput.value = "";
+
+            botResponse();
+        });
     }
 </script>
 
