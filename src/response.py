@@ -205,9 +205,9 @@ def lihat_tugas(msg: str, db) -> str:
     pake_tanggal_range = False
     pake_tanggal_satuan = False
 
+    # Cek user-nya mau deadline pada periode tertentu atau nggak
     found = False
     idx_keyword_tanggal_range_dari = -1
-    # Cek user-nya mau deadline pada periode tertentu atau nggak
     for trigger_dari in trigger_tanggal_range_dari:
         idx_keyword_tanggal_range_dari =\
             boyer_moore(text=msg, pattern=trigger_dari)
@@ -234,6 +234,14 @@ def lihat_tugas(msg: str, db) -> str:
             pake_tanggal_satuan = boyer_moore(text=msg, pattern=trigger) != -1
             if pake_tanggal_satuan:
                 break
+
+    # Tentuin user-nya mau jenis task (tugas) tertentu atau nggak
+    matching_patt = None
+    jenis_tugas = load_keywords(db)['jenis_tugas']
+    print(jenis_tugas)
+    for jenis in jenis_tugas:
+        if boyer_moore(text=msg, pattern=jenis) != -1:
+            matching_patt = jenis
 
     i = 1
     for tugas in all_tugas:
@@ -304,6 +312,9 @@ def lihat_tugas(msg: str, db) -> str:
             jenis = 'tugas kecil'
         else:
             jenis = tugas_dict['jenis']
+
+        if matching_patt is not None and matching_patt != jenis:
+            continue
 
         space_4 = '    '
         res += f'{i}. ID: {tugas.id}'
