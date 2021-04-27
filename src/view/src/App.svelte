@@ -36,7 +36,10 @@
             redirect: "manual",
         })
         .then(res => res.json())
-        .then(res => msgText = res.msg)
+        .then(res => {
+            msgText = res.msg.replace(/\n/g, "<br />");
+            console.log(msgText);
+        })
         .catch(err => {
             console.log(err);
             msgText = 'Maaf, aku ga paham kamu ngomong apa 😟';

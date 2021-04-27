@@ -10,7 +10,7 @@ from firebase_admin import firestore
 # others
 import re
 from matching import boyer_moore
-from response import lihat_tugas
+from response import lihat_tugas, handle_bingung
 
 app = Flask(__name__)
 
@@ -30,6 +30,7 @@ def respond():
     # asumsi msg udah dibersihin dari front-end
     msg = str(request.args.get('msg')).lower()
     msg = re.sub(r'[^\s\w:./,\-]', '', msg)
+    msg = re.sub(r'\s{2,}', '', msg)
 
     user_mau = dict()
     user_mau['tambah_task'] = False
@@ -53,20 +54,23 @@ def respond():
     # Untuk di-return ke front-end, harus memiliki 'msg'
     ret = dict()
 
-    if user_mau['tambah_task']:
-        pass
-    elif user_mau['lihat_task']:
-        ret['msg'] = lihat_tugas(msg, db)
-    elif user_mau['lihat_deadline']:
-        pass
-    elif user_mau['update_task']:
-        pass
-    elif user_mau['nandain_task_selesai']:
-        pass
-    elif user_mau['lihat_help']:
-        pass
-    else:  # kasih error
-        ret['msg'] = 'Maaf, aku ga paham kamu ngomong apa 😟'
+    try:
+        if user_mau['tambah_task']:
+            pass
+        elif user_mau['lihat_task']:
+            ret['msg'] = lihat_tugas(msg, db)
+        elif user_mau['lihat_deadline']:
+            pass
+        elif user_mau['update_task']:
+            pass
+        elif user_mau['nandain_task_selesai']:
+            pass
+        elif user_mau['lihat_help']:
+            pass
+        else:  # kasih error
+            ret['msg'] = handle_bingung()
+    except ValueError or KeyError:
+        ret['msg'] = handle_bingung()
 
     return jsonify(ret)
 

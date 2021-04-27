@@ -1,9 +1,9 @@
 '''
 Module yang mengandung fungsi matching
 
-Reinaldo Antolis
-Jeane Mikha
-Josep Marcello
+Reinaldo Antolis / 13519015
+Jeane Mikha / 13519116
+Josep Marcello / 13519164
 
 24 April 2021
 '''
