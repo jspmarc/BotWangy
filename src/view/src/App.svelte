@@ -1,64 +1,134 @@
 <script>
-    let name = 'Mahasiswa'; // deklarasi variabel bisa gini (dari main.js)
-    let num = 0; // atau gini
+    function appendMessage(name, img, side, text) {
+        //   Simple solution for small apps
+        const msgHTML = `
+            <div class="msg ${side}-msg">
+                <div class="msg-img" style="background-image: url(${img})"></div>
 
-    let kelompok = ['Jeane', 'Josep', 'Rei'];
+                <div class="msg-bubble">
+                    <div class="msg-info">
+                        <div class="msg-info-name">${name}</div>
+                        <div class="msg-info-time">${formatDate(new Date())}</div>
+                    </div>
 
-    const up = () => {
-        num++;
-    };
+                    <div class="msg-text">${text}</div>
+                </div>
+            </div>
+        `;
 
-    const match = () => {
-        const msg = document.getElementById('msg').value
-        fetch(`./send_msg?msg=${msg}`)
-            .then(res => res.json())
-            .then(res => {
-                document.getElementById('hasil_chat').innerText = res.msg;
-            })
-            .catch(err => console.log(err))
+        msgerChat.insertAdjacentHTML("beforeend", msgHTML);
+        msgerChat.scrollTop += 500;
+    }
+
+    function botResponse() {
+        const r = random(0, BOT_MSGS.length - 1);
+        const msgText = BOT_MSGS[r];
+        const delay = msgText.split(" ").length * 100;
+
+        setTimeout(() => {
+            appendMessage(BOT_NAME, BOT_IMG, "left", msgText);
+        }, delay);
+    }
+
+    // Utils
+    function get(selector, root = document) {
+        return root.querySelector(selector);
+    }
+
+    function formatDate(date) {
+        const h = "0" + date.getHours();
+        const m = "0" + date.getMinutes();
+
+        return `${h.slice(-2)}:${m.slice(-2)}`;
+    }
+
+    function random(min, max) {
+        return Math.floor(Math.random() * (max - min) + min);
+    }
+
+    export let name; // deklarasi variabel bisa gini (dari main.js)
+
+    const BOT_MSGS = [
+        "Hi, how are you?",
+        "Ohh... I can't understand what you trying to say. Sorry!",
+        "I like to play games... But I don't know how to play!",
+        "Sorry if my answers are not relevant. :))",
+        "I feel sleepy! :("
+    ];
+
+    // Icons made by Freepik from www.flaticon.com
+    const BOT_IMG = "";
+    const PERSON_IMG = "";
+    const BOT_NAME = "Bot Wangy";
+    const PERSON_NAME = "Mahasiswa";
+
+    // setup messenger stuff
+    let msgerForm = null;
+    let msgerInput = null;
+    let msgerChat = null;
+    window.onload = () => {
+        msgerForm = get(".msger-inputarea");
+        msgerInput = get(".msger-input");
+        msgerChat = get(".msger-chat");
+
+        msgerForm.addEventListener("submit", event => {
+            event.preventDefault();
+
+            const msgText = msgerInput.value;
+            if (!msgText) return;
+
+            appendMessage(PERSON_NAME, PERSON_IMG, "right", msgText);
+            msgerInput.value = "";
+
+            botResponse();
+        });
     }
 
 </script>
 
 <main>
-    <h1>Hai {name}</h1>
-    <p>Visit the <a href='https://svelte.dev/tutorial'>Svelte tutorial</a> to learn how to build Svelte apps.</p>
-    <button on:click={up}>I've been pressed {num} times</button>
-    {#if num % 15 == 0}
-        <h2>foobaz</h2>
-    {:else if num % 3 == 0}
-        <h2>foo</h2>
-    {:else if num % 5 == 0}
-        <h2>baz</h2>
-    {:else}
-        <h2>bar</h2>
-    {/if}
-    {#each ['a', 'b'] as letters}
-        <h2>{letters}</h2>
-    {/each}
+    <section class="msger">
+        <header class="msger-header">
+            <div class="msger-header-title">
+                <i class="fas fa-comment-alt"></i> Bot Wangy
+            </div>
+            <div class="msger-header-options">
+                <span><i class="fas fa-cog"></i></span>
+            </div>
+        </header>
+        <div class="msger-chat">
+            <div class="msg left-msg">
+                <div
+                    class="msg-img"
+                    style="background-image: linear-gradient(to top, #f0f3fa 0%, #eef1f5 100%);">
+                </div>
 
-    <form>
-        <label for='msg'>Message: </label>
-        <input id='msg' type='text' value='isi pesan mu di sini' />
-        <br>
-        <button type='button' on:click='{match}'>
-            Find index of pattern on text!
-        </button>
-    </form>
-    <p id='hasil_chat'></p>
+                <div class="msg-bubble">
+                    <div class="msg-info">
+                        <div class="msg-info-name">{BOT_NAME}</div>
+                    </div>
 
-    <h5>Brought to you by:</h5>
-    {#each kelompok as nama_anggota}
-        <p>{nama_anggota}</p>
-    {/each}
+                    <div class="msg-text">
+                        Halo? Selamat datang di Bot Wangy! Silahkan masukkan pesan Anda!
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <form class="msger-inputarea">
+            <input type="text" class="msger-input" placeholder="Enter your message...">
+            <button type="submit" class="msger-send-btn" on:click={botResponse}>Send</button>
+        </form>
+    </section>
 </main>
 
 <style>
     main {
-        text-align: center;
-        padding: 1em;
-        max-width: 240px;
+        /* text-align: center; */
+        padding: 0;
+        /* max-width: 240px; */
         margin: 0 auto;
+        height: 100%;
     }
 
     h1 {
