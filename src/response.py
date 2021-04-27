@@ -6,7 +6,13 @@ import re
 
 def get_date(msg: str) -> 'list[datetime]':
     '''
-    Fungsi untuk mengekstrak tanggal dari string
+    Fungsi untuk mengekstrak tanggal dari string. Format tanggal yang valid:
+    <tanggal/nomor hari><delimiter><bulan><delimiter><tahun>
+    delimiter valid: `-`, `/`, ` `
+    tanggal valid: 1 atau 01 sampai 31
+    bulan valid: nama-nama bulan dalam bahasa Indonesia,
+                 nomor bulan 01 atau 1 sampai 12
+    tahun valid: dua digit terakhir tahun atau 4 digit (21 atau 2021)
 
     Parameters
     ----------
@@ -18,11 +24,23 @@ def get_date(msg: str) -> 'list[datetime]':
     list[datetime]
         list of datetime berisikan semua tanggal pada string yang ditemukan
         secara berurut
+
+    Examples
+    --------
+    >>> get_date('tanggal 27-April/2021')
+    [datetime.datetime(2021, 4, 27, 0, 0)]
+    >>> get_date('tanggal 27/04-21')
+    [datetime.datetime(2021, 4, 27, 0, 0)]
+    >>> get_date('tanggal 27-04 21')
+    [datetime.datetime(2021, 4, 27, 0, 0)]
     '''
     month_regex =\
             r'(januari|februari|maret|april|mei|juni|juli|agustus|september|oktober|november|desember)'
-    regex_group1 = r'\d{1,2}(\/|-)\d{1,2}(\/|-)\d{2,4}'
-    regex_group2 = r'\d{1,2} ' + month_regex + r' \d{2,4}'
+    regex_separator = r'(\/|-| )'  # matches / or - or `space`
+    regex_group1 = r'\d{1,2}' + regex_separator + r'\d{1,2}' +\
+        regex_separator + r'\d{2,4}'
+    regex_group2 = r'\d{1,2}' + regex_separator + month_regex +\
+        regex_separator + r'\d{2,4}'
     regex_all = r'(' + regex_group1 + r'|' + regex_group2 + r')'
 
     month_no = {
@@ -47,13 +65,15 @@ def get_date(msg: str) -> 'list[datetime]':
     for match in matches_dirty:
         clean = match[0]
 
+        clean = re.findall(r'[^ /\-]+', clean)
+        clean = '/'.join(clean)
         if re.search(regex_group2, clean, flags=re.IGNORECASE) is not None:
-            clean = clean.split(' ')
+            clean = clean.split('/')
             date = clean[0]
             try:
                 month = month_no[clean[1].lower()]
             except KeyError:
-                month = '1' # TODO: GANTI INI
+                month = '1'  # TODO: GANTI INI
             year = clean[2]
             clean = date + '/' + month + '/' + year
 
@@ -62,12 +82,11 @@ def get_date(msg: str) -> 'list[datetime]':
         try:
             matches.append(datetime.strptime(clean, '%d/%m/%y'))
         except ValueError:
-            matches.append(datetime.strptime(clean, '%d/%m/%Y'))
-            # try:
-            #     matches.append(datetime.strptime(clean, '%d/%m/%Y'))
-            # except ValueError:
-            #     # TODO: GANTI INI
-            #     matches.append(datetime.now(ZoneInfo('Asia/Jakarta')))
+            try:
+                matches.append(datetime.strptime(clean, '%d/%m/%Y'))
+            except ValueError:
+                # TODO: GANTI INI
+                matches.append(datetime.now(ZoneInfo('Asia/Jakarta')))
 
     return matches
 
@@ -174,5 +193,5 @@ def lihat_tugas(msg: str, db) -> str:
 
 
 if __name__ == '__main__':
-    coba = 'Hari ini tanggal 27 April 2021 : 27/04/2021 : 27-04-2021'
+    coba = 'Hari ini tanggal 27-April/2021 : 27 04/2021 : 27/04-2021'
     print(get_date(coba))
