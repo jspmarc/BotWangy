@@ -10,7 +10,7 @@ Josep Marcello
 import string
 
 
-def find_last_occurance(s: str):
+def find_last_occurance(s: str) -> 'dict[str, int]':
     '''
     Fungsi untuk mendapatkan kemunculan terakhir dari semua karakter pada
     sebuah string
@@ -39,7 +39,7 @@ def find_last_occurance(s: str):
     return ret
 
 
-def boyer_moore(pattern: str, text: str):
+def boyer_moore(text: str, pattern: str) -> int:
     '''
     Fungsi untuk string matching dengan algoritma Boyer-Moore
 
@@ -90,8 +90,43 @@ def boyer_moore(pattern: str, text: str):
     return -1
 
 
+def levenshtein_distance(s1: str, s2: str, i: int, j: int) -> int:
+    '''
+    Fungsi untuk menghitung jarak levenshtein antara 2 string.
+
+    Parameters
+    ----------
+    s1 : str
+        string pertama
+    s2 : str
+        string kedua
+    i : int
+        karakter ke-i pada s1 (dimulai dari 1)
+    j : int
+        karakter ke-j pada s2 (dimulai dari 1)
+
+    Returns
+    -------
+    int
+        Jarak levenshtein kedua string
+
+    Example
+    -------
+    >>> boyer_moore(s1='kitten', s2='sitting')
+    3
+    '''
+    if i == 0 or j == 0:
+        return max(i, j)
+
+    s1 = '\0' + s1 if s1[0] != '\0' else s1
+    s2 = '\0' + s2 if s2[0] != '\0' else s2
+    ret = [[0 for _ in s2] for _ in s1]
+
+    return ret[-1][-1]
+
+
 if __name__ == '__main__':
     text = 'HERE IS A SIMPLE EXAMPLE'
     idx = boyer_moore(text=text, pattern='EXAMPLE')
     print(idx)
-    print(text[idx:])
+    print(levenshtein_distance(s1='kitten', i=1, s2='sitting', j=1))

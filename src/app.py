@@ -7,8 +7,10 @@ from dotenv import load_dotenv
 import firebase_admin
 from firebase_admin import credentials
 from firebase_admin import firestore
-# app's modules
+# others
+import re
 from matching import boyer_moore
+from response import lihat_tugas
 
 app = Flask(__name__)
 
@@ -23,25 +25,50 @@ def home(path):
     return send_from_directory('view/public', path)
 
 
-@app.route("/match")
-def match():
-    text = str(request.args.get('text'))
-    pattern = str(request.args.get('pattern'))
+@app.route("/send_msg")
+def respond():
+    # asumsi msg udah dibersihin dari front-end
+    msg = str(request.args.get('msg')).lower()
+    msg = re.sub(r'[^\s\w:./,\-]', '', msg)
 
-    return jsonify(index_start=boyer_moore(pattern, text))
+    user_mau = dict()
+    user_mau['tambah_task'] = False
+    user_mau['lihat_task'] = False
+    user_mau['lihat_deadline'] = False
+    user_mau['update_task'] = False
+    user_mau['nandain_task_selesai'] = False
+    user_mau['lihat_help'] = False
 
+    # Tentuin user mau ngapain
+    # Cek mau liat task apa bukan
+    trigger_liat_task = [
+        'apa saja',
+    ]
 
-@app.route("/get_tugas")
-def get_tugas():
-    tugas_ref = db.collection(u'tugas')
-    all_tugas = tugas_ref.stream()
-    tugas_dict = dict()
+    for trigger in trigger_liat_task:
+        if boyer_moore(text=msg, pattern=trigger) != -1:
+            user_mau['lihat_task'] = True
+            break
 
-    for tugas in all_tugas:
-        # print(f'{tugas.id} => {tugas.to_dict()}')
-        tugas_dict[tugas.id] = tugas.to_dict()
+    # Untuk di-return ke front-end, harus memiliki 'msg'
+    ret = dict()
 
-    return jsonify(tugas_dict)
+    if user_mau['tambah_task']:
+        pass
+    elif user_mau['lihat_task']:
+        ret['msg'] = lihat_tugas(msg, db)
+    elif user_mau['lihat_deadline']:
+        pass
+    elif user_mau['update_task']:
+        pass
+    elif user_mau['nandain_task_selesai']:
+        pass
+    elif user_mau['lihat_help']:
+        pass
+    else:  # kasih error
+        ret['msg'] = 'Maaf, aku ga paham kamu ngomong apa 😟'
+
+    return jsonify(ret)
 
 
 if __name__ == '__main__':
