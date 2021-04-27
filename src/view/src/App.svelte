@@ -86,8 +86,6 @@
 </script>
 
 <main>
-    <h1>Hello {name}!</h1>
-    <h1>TEST</h1>
     <section class="msger">
         <header class="msger-header">
             <div class="msger-header-title">
@@ -97,7 +95,6 @@
                 <span><i class="fas fa-cog"></i></span>
             </div>
         </header>
-
         <div class="msger-chat">
             <div class="msg left-msg">
                 <div
@@ -126,10 +123,11 @@
 
 <style>
     main {
-        text-align: center;
-        padding: 1em;
-        max-width: 240px;
+        /* text-align: center; */
+        padding: 0;
+        /* max-width: 240px; */
         margin: 0 auto;
+        height: 100%;
     }
 
     h1 {
