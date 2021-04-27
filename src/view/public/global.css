@@ -21,9 +21,7 @@ html {
 }
 
 body {
-    /* display: flex; */
     justify-content: center;
-    /* align-items: center; */
     height: 100vh;
     background-image: var(--body-bg);
     font-family: 'Lato', sans-serif;
@@ -40,13 +38,8 @@ html, body {
     flex-flow: column wrap;
     justify-content: space-between;
     width: 100%;
-    /* max-width: 867px; */
-    /* margin: 25px 10px; */
     height: calc(100% - 50px);
-    /* border: var(--border); */
-    /* border-radius: 5px; */
     background: var(--msger-bg);
-    /* box-shadow: 0 15px 15px -5px rgba(0, 0, 0, 0.2); */
 }
 
 .msger-header {
@@ -166,5 +159,5 @@ html, body {
 
 .msg-bubble {
     word-wrap: break-word;
-    margin-bottom: 10px;
+    /* margin-bottom: 10px; */
 }
