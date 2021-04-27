@@ -8,7 +8,7 @@ Josep Marcello / 13519164
 27 April 2021
 '''
 
-from datetime import datetime
+from datetime import datetime, timedelta
 from backports.zoneinfo import ZoneInfo
 from matching import boyer_moore
 import re
@@ -23,6 +23,18 @@ def get_date(msg: str) -> 'list[datetime]':
     bulan valid: nama-nama bulan dalam bahasa Indonesia,
                  nomor bulan 01 atau 1 sampai 12
     tahun valid: dua digit terakhir tahun atau 4 digit (21 atau 2021)
+    Contoh tanggal valid:
+    - 28 April 2021
+    - 28 04 2021
+    - 28 04 21
+    - 28/04/2021
+    - 28/4/21
+    - 08/4/21
+    - 8/4/21
+    - 28-April-2021
+    - 28/April/2021
+    - 28/04-21
+    - 28-April/21
 
     Parameters
     ----------
@@ -52,8 +64,8 @@ def get_date(msg: str) -> 'list[datetime]':
     [datetime.datetime(2021, 4, 27, 0, 0)]
     '''
     month_regex =\
-            r'(januari|februari|maret|april|mei|juni|juli|agustus|september|oktober|november|desember)'
-    regex_separator = r'(\/|-| )'  # matches / or - or `space`
+        r'(januari|februari|maret|april|mei|juni|juli|agustus|september|oktober|november|desember)'
+    regex_separator = r'(\/|-| )'  # matches `/` or `-` or `space`
     regex_group1 = r'\d{1,2}' + regex_separator + r'\d{1,2}' +\
         regex_separator + r'\d{2,4}'
     regex_group2 = r'\d{1,2}' + regex_separator + month_regex +\
@@ -90,8 +102,6 @@ def get_date(msg: str) -> 'list[datetime]':
             month = month_no[clean[1].lower()]
             year = clean[2]
             clean = date + '/' + month + '/' + year
-
-        clean = re.sub('-', '/', clean)
 
         try:
             matches.append(datetime
@@ -130,7 +140,18 @@ def load_keywords(db) -> 'dict[str, list[str]]':
 
 def lihat_tugas(msg: str, db) -> str:
     '''
-    Fungsi untuk mendapatkan list tugas dari database
+    Fungsi untuk mendapatkan list tugas dari database. Bisa dengan periode
+    tertentu.
+    Bisa dengan durasi (inklusif), seperti:
+        <dari|antara> <tanggal 1> <hingga|sampai> <tanggal 2>
+    Bisa juga dari sekarang sampai jangka waktu tertentu, seperti:
+        <n> <hari|minggu|bulan|tahun> <ke depan|berikutnya|lagi>
+    Apa bila bentuk query/msg adalah:
+    `deadline apa saja dari 24/04/2021 sampai 30/04/2021 3 minggu ke depan?`
+    atau
+    `deadline apa saja 3 minggu ke depan dari 24/04/2021 sampai 30/04/2021?`
+    maka yang hanya akan ditunjukkan adalah deadline dari atnggal 24 April 21
+    sampai 30 April 2021 (inklusif)
 
     Parameters
     ----------
@@ -151,6 +172,18 @@ def lihat_tugas(msg: str, db) -> str:
     ValueError
         Kalau format tanggal pada msg salah
     '''
+    def fail(saat: str) -> str:
+        '''
+        Melakukan subroutine ketika menjadi kegagalan
+
+        Returns
+        -------
+        str
+            Pesan error
+        '''
+        print(f'[List tugas] Error saat {saat}: {msg}')
+        return 'Gagal memehami periode/durasi pesan 😵'
+
     tugas_ref = db.collection(u'tugas')
     all_tugas = tugas_ref.stream()
     res = "[Daftar tugas IF'19]\n"
@@ -162,24 +195,42 @@ def lihat_tugas(msg: str, db) -> str:
         'lagi',
     ]
 
-    trigger_tanggal_range = [
-        ['dari', 'hingga'],
-        ['dari', 'sampai'],
-        ['dari', 'dan'],
-        ['antara', 'hingga'],
-        ['antara', 'sampai'],
-        ['antara', 'dan'],
+    trigger_tanggal_range_dari = [
+        'dari',
+        'antara',
+    ]
+
+    trigger_tanggal_range_sampai = [
+        'hingga',
+        'sampai',
     ]
 
     pake_tanggal_range = False
     pake_tanggal_satuan = False
 
-    for triggers in trigger_tanggal_range:
-        pake_tanggal_range =\
-            boyer_moore(text=msg, pattern=triggers[0]) != -1\
-            and boyer_moore(text=msg, pattern=triggers[1]) != -1
-        if pake_tanggal_range:
+    found = False
+    idx_keyword_tanggal_range_dari = -1
+    # Cek user-nya mau deadline pada periode tertentu atau nggak
+    for trigger_dari in trigger_tanggal_range_dari:
+        idx_keyword_tanggal_range_dari =\
+            boyer_moore(text=msg, pattern=trigger_dari)
+        found = idx_keyword_tanggal_range_dari != -1
+        if found:
             break
+
+    found = False
+    idx_keyword_tanggal_range_sampai = -1
+    for trigger_sampai in trigger_tanggal_range_sampai:
+        idx_keyword_tanggal_range_sampai =\
+            boyer_moore(text=msg, pattern=trigger_sampai)
+        found = idx_keyword_tanggal_range_sampai != -1
+        if found:
+            break
+
+    pake_tanggal_range =\
+        idx_keyword_tanggal_range_dari != -1\
+        and idx_keyword_tanggal_range_sampai != -1\
+        and idx_keyword_tanggal_range_dari <= idx_keyword_tanggal_range_sampai\
 
     if not pake_tanggal_range:
         for trigger in trigger_tanggal_satuan:
@@ -211,19 +262,52 @@ def lihat_tugas(msg: str, db) -> str:
 
         # cek tanggal permintaan user
         if pake_tanggal_satuan:
-            pass  # dapetin range-nya
+            trigger_periode = [
+                'hari',
+                'minggu',
+                'bulan',
+                'tahun',
+            ]
+
+            for trigger in trigger_periode:
+                idx_periode = boyer_moore(text=msg, pattern=trigger)
+                if idx_periode != -1:
+                    periode = trigger
+                    break
+
+            if idx_periode == -1:
+                return fail('mendapatkan trigger periode')
+
+            try:
+                durasi = int(re.findall(r'\d+', msg[:idx_periode])[0])
+            except IndexError:
+                return fail('mendapatkan waktu pada tanggal satuan')
+
+            if periode == 'minggu':
+                durasi *= 7
+            elif periode == 'bulan':
+                durasi *= 30
+            elif periode == 'tahun':
+                durasi *= 365
+
+            # Tetep tunjukin tugas yang udah lewat deadline
+            now = datetime.now(ZoneInfo("Asia/Jakarta")).replace(microsecond=0)
+            if deadline > now + timedelta(days=durasi):
+                continue
+
         elif pake_tanggal_range:
             try:
                 date1, date2, *_ = get_date(msg)
             except ValueError:
-                pass  # harusnya lempar exception or something
+                return fail('mendapatkan tanggal pada tanggal range')
             if deadline <= date1 or deadline >= date2:
+                # Deadline di luar permintaan user
                 continue
 
         if tugas_dict['jenis'] == 'tubes':
             jenis = 'tugas besar'
         elif tugas_dict['jenis'] == 'tucil':
-            jenis = 'tugas_kecil'
+            jenis = 'tugas kecil'
         else:
             jenis = tugas_dict['jenis']
 
@@ -239,7 +323,7 @@ def lihat_tugas(msg: str, db) -> str:
 
 
 def handle_bingung():
-    return 'Maaf, aku ga paham kamu ngomong apa 😟'
+    return 'Maaf, aku ga paham kamu ngomong apa 😵'
 
 
 if __name__ == '__main__':

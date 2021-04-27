@@ -72,9 +72,7 @@ def boyer_moore(text: str, pattern: str) -> int:
 
     i = pjg_pat - 1  # iterator pattern
     j = i  # iterator text
-    count = 0
     while j < pjg_text:
-        count += 1
         if text[j] == pattern[i]:
             if i == 0:
                 return j
