@@ -52,13 +52,11 @@ def respond():
 
     # Untuk di-return ke front-end, harus memiliki 'msg'
     ret = dict()
-    if boyer_moore(text=msg, pattern=['']) != -1:
-        pass
 
     if user_mau['tambah_task']:
         pass
     elif user_mau['lihat_task']:
-        ret['msg'] = lihat_tugas(msg)
+        ret['msg'] = lihat_tugas(msg, db)
     elif user_mau['lihat_deadline']:
         pass
     elif user_mau['update_task']:

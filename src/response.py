@@ -19,7 +19,57 @@ def get_date(msg: str) -> 'list[datetime]':
         list of datetime berisikan semua tanggal pada string yang ditemukan
         secara berurut
     '''
-    return re.findall(r'', msg)
+    month_regex =\
+            r'(januari|februari|maret|april|mei|juni|juli|agustus|september|oktober|november|desember)'
+    regex_group1 = r'\d{1,2}(\/|-)\d{1,2}(\/|-)\d{2,4}'
+    regex_group2 = r'\d{1,2} ' + month_regex + r' \d{2,4}'
+    regex_all = r'(' + regex_group1 + r'|' + regex_group2 + r')'
+
+    month_no = {
+        'januari': '1',
+        'februari': '2',
+        'maret': '3',
+        'april': '4',
+        'mei': '5',
+        'juni': '6',
+        'juli': '7',
+        'agustus': '8',
+        'september': '9',
+        'oktober': '10',
+        'november': '11',
+        'desember': '12',
+    }
+
+    matches_dirty = re.findall(regex_all, msg, flags=re.IGNORECASE)
+
+    matches = []
+
+    for match in matches_dirty:
+        clean = match[0]
+
+        if re.search(regex_group2, clean, flags=re.IGNORECASE) is not None:
+            clean = clean.split(' ')
+            date = clean[0]
+            try:
+                month = month_no[clean[1].lower()]
+            except KeyError:
+                month = '1' # TODO: GANTI INI
+            year = clean[2]
+            clean = date + '/' + month + '/' + year
+
+        clean = re.sub('-', '/', clean)
+
+        try:
+            matches.append(datetime.strptime(clean, '%d/%m/%y'))
+        except ValueError:
+            matches.append(datetime.strptime(clean, '%d/%m/%Y'))
+            # try:
+            #     matches.append(datetime.strptime(clean, '%d/%m/%Y'))
+            # except ValueError:
+            #     # TODO: GANTI INI
+            #     matches.append(datetime.now(ZoneInfo('Asia/Jakarta')))
+
+    return matches
 
 
 def load_keywords(db) -> 'dict[str, list[str]]':
@@ -121,3 +171,8 @@ def lihat_tugas(msg: str, db) -> str:
         i += 1
 
     return res
+
+
+if __name__ == '__main__':
+    coba = 'Hari ini tanggal 27 April 2021 : 27/04/2021 : 27-04-2021'
+    print(get_date(coba))
