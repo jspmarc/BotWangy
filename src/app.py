@@ -10,7 +10,7 @@ from firebase_admin import firestore
 # others
 import re
 from matching import boyer_moore
-from response import lihat_tugas, handle_bingung
+from response import lihat_tugas, handle_bingung #, tambah_tugas
 
 app = Flask(__name__)
 
@@ -41,15 +41,23 @@ def respond():
     user_mau['lihat_help'] = False
 
     # Tentuin user mau ngapain
-    # Cek mau liat task apa bukan
-    trigger_liat_task = [
-        'apa saja',
-    ]
+    tau_mau_ngapain = False
 
-    for trigger in trigger_liat_task:
-        if boyer_moore(text=msg, pattern=trigger) != -1:
-            user_mau['lihat_task'] = True
-            break
+    if not tau_mau_ngapain:
+        trigger_tambah_task = [
+            'ingatkan',
+            'tambahkan'
+        ]
+
+        for trigger in trigger_liat_task:
+            if boyer_moore(text=msg, pattern=trigger) != -1:
+                user_mau['lihat_task'] = True
+                tau_mau_ngapain = True
+                break
+
+    # harus yang terakhir
+    if not tau_mau_ngapain:
+        user_mau['tambah_task'] = True
 
     # Untuk di-return ke front-end, harus memiliki 'msg'
     ret = dict()
@@ -62,6 +70,7 @@ def respond():
         elif user_mau['lihat_deadline']:
             pass
         elif user_mau['update_task']:
+            # ret['msg'] = tambah_tugas(msg, db)
             pass
         elif user_mau['nandain_task_selesai']:
             pass
