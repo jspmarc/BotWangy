@@ -234,7 +234,7 @@ def lihat_tugas(msg: str, db) -> str:
 
     if not pake_tanggal_range:
         for trigger in trigger_tanggal_satuan:
-            pake_tanggal_satuan = boyer_moore(text=msg, pattern=trigger)
+            pake_tanggal_satuan = boyer_moore(text=msg, pattern=trigger) != -1
             if pake_tanggal_satuan:
                 break
 
