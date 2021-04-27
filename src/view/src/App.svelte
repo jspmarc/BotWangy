@@ -13,7 +13,6 @@
         fetch(`./send_msg?msg=${msg}`)
             .then(res => res.json())
             .then(res => {
-                console.log(res.msg);
                 document.getElementById('hasil_chat').innerText = res.msg;
             })
             .catch(err => console.log(err))

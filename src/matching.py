@@ -39,7 +39,7 @@ def find_last_occurance(s: str) -> 'dict[str, int]':
     return ret
 
 
-def boyer_moore(pattern: str, text: str) -> int:
+def boyer_moore(text: str, pattern: str) -> int:
     '''
     Fungsi untuk string matching dengan algoritma Boyer-Moore
 
@@ -129,5 +129,4 @@ if __name__ == '__main__':
     text = 'HERE IS A SIMPLE EXAMPLE'
     idx = boyer_moore(text=text, pattern='EXAMPLE')
     print(idx)
-    print(text[idx:])
     print(levenshtein_distance(s1='kitten', i=1, s2='sitting', j=1))
