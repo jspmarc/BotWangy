@@ -26,9 +26,7 @@
 
     function botResponse() {
         const msg = document.getElementById('msger-input').value;
-        const delay = msg.split(" ").length * 100;
         if (!isTextValid(msg)) {
-            console.log(msg)
             return; // do nothing
         }
         let msgText = '';
@@ -38,7 +36,6 @@
         .then(res => res.json())
         .then(res => {
             msgText = res.msg.replace(/\n/g, "<br />");
-            console.log(msgText);
         })
         .catch(err => {
             console.log(err);
@@ -47,7 +44,7 @@
 
         setTimeout(() => {
             appendMessage(BOT_NAME, BOT_IMG, "left", msgText);
-        }, delay);
+        }, 500);
     }
 
     // Utils
