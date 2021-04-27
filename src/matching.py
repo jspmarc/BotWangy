@@ -110,7 +110,7 @@ def levenshtein_distance(s1: str, s2: str, i: int, j: int) -> int:
 
     Example
     -------
-    >>> boyer_moore(s1='kitten', s2='sitting')
+    >>> levenshtein_distance(s1='kitten', i=0, s2='sitting', j=0)
     3
     '''
     if i == 0 or j == 0:

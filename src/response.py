@@ -326,6 +326,52 @@ def handle_bingung():
     return 'Maaf, aku ga paham kamu ngomong apa 😵'
 
 
+def help_msg(db) -> str:
+    '''
+    Membuat fungsi untuk help message
+
+    Parameters
+    ----------
+    db : firestore database
+        database untuk mendapatkan data
+
+    Returns
+    -------
+    str
+        help message
+    '''
+    keywords = load_keywords(db)
+    jenis_tugas = keywords['jenis_tugas']
+
+    ret = 'It\'s dangerous to go alone! Take this.\n'
+    ret += '\n'
+    ret += '[Fitur]\n'
+    ret += '1. Menambahkan tasks baru.\n'
+    ret += 'Kata kunci (tanpa "): \n'
+    ret += '2. Melihat daftar tasks yang harus dikerjakan.\n'
+    ret += 'Kata kunci (tanpa "): "apa saja"\n'
+    ret += '3. Menampilkan deadline dari suatu task tertentu.\n'
+    ret += 'Kata kunci (tanpa "): "kapan"\n'
+    ret += '4. Memperbarui task tertentu.\n'
+    ret += 'Kata kunci (tanpa "): \n'
+    ret += '5. Menandai bahwa suatu task sudah selesai dikerjakan.\n'
+    ret += 'Kata kunci (tanpa "): \n'
+    ret += '6. Menampilkan opsi help yang difasilitasi oleh assistant.\n'
+    ret += 'Kata kunci (tanpa "): \n'
+    ret += '7. Mendefinisikan list kata penting terkait tugas.\n'
+    ret += 'Kata kunci (tanpa "): "tolong", "help", "助けて", "tasukete"\n'
+    ret += '8. Menampilkan pesan error ketika tidak mengenali query user\n'
+    ret += '\n'
+    ret += '[Kata kunci tugas]\n'
+
+    i = 1
+    for jenis in jenis_tugas:
+        ret += f'{i}. {jenis}\n'
+        i += 1
+
+    return ret
+
+
 if __name__ == '__main__':
     coba = 'Hari ini tanggal 27-April/2021 : 27 04/2021 : 27/04-2021'
     print(get_date(coba))

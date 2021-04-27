@@ -10,7 +10,7 @@ from firebase_admin import firestore
 # others
 import re
 from matching import boyer_moore
-from response import lihat_tugas, handle_bingung #, tambah_tugas
+from response import lihat_tugas, handle_bingung, help_msg #, tambah_tugas
 
 app = Flask(__name__)
 
@@ -103,7 +103,7 @@ def respond():
         elif user_mau['nandain_task_selesai']:
             pass
         elif user_mau['lihat_help']:
-            ret['msg'] = 'It\' dangerous to go alone! Take this.'
+            ret['msg'] = help_msg(db)
         else:  # kasih error
             ret['msg'] = handle_bingung()
     except ValueError or KeyError:
