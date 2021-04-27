@@ -9,7 +9,9 @@
     };
 
     const match = () => {
-        fetch(`./match?text=${document.getElementById('matching_text').value}&pattern=${document.getElementById('matching_pattern').value}`)
+        const val = document.getElementById('matching_text').value;
+        const pat = document.getElementById('matching_pattern').value;
+        fetch(`./match?text=${val}&pattern=${pat}`)
             .then(res => res.json())
             .then(res => document.getElementById('match_result').innerText = res.index_start)
             .catch(err => console.log(`menghangdeh: ${err}`))
