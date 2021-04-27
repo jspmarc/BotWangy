@@ -314,7 +314,7 @@ def lihat_tugas(msg: str, db) -> str:
         space_4 = '    '
         res += f'{i}. ID: {tugas.id}'
         res += f'\n{space_4}Matkul: {tugas_dict["id_matkul"]}'
-        res += f'\n{space_4}Deadline: {deadline_str}'
+        res += f'\n{space_4}Deadline (yyyy/mm/dd): {deadline_str}'
         res += f'\n{space_4}{jenis}: {tugas_dict["topik"]}'
         res += '\n\n'
         i += 1

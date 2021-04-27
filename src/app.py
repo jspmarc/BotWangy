@@ -32,7 +32,7 @@ def respond():
     msg = re.sub(r'[^\s\w:./,\-]', '', msg)
     msg = re.sub(r'\s{2,}', '', msg)
 
-    user_mau = dict()
+    user_mau = {}
     user_mau['tambah_task'] = False
     user_mau['lihat_task'] = False
     user_mau['lihat_deadline'] = False
@@ -40,24 +40,52 @@ def respond():
     user_mau['nandain_task_selesai'] = False
     user_mau['lihat_help'] = False
 
+    triggers = {}
+    triggers['lihat_task'] = [
+        'apa saja',
+    ]
+    triggers['lihat_deadline'] = [
+        'kapan',
+    ]
+    triggers['update_task'] = []
+    triggers['nandain_task_selesai'] = []
+    triggers['lihat_help'] = [
+        'help',
+        'tolong',
+        '助けて',
+        'tasukete',
+    ]
+    triggers['tambah_task'] = []
+
     # Tentuin user mau ngapain
     tau_mau_ngapain = False
 
+    def tentuin_mau_apa(aksi, triggers) -> bool:
+        ret = False
+        if not tau_mau_ngapain:
+            for trigger in triggers:
+                if boyer_moore(text=msg, pattern=trigger) != -1:
+                    user_mau[aksi] = True
+                    ret = True
+                    break
+
+        return ret
+
+    for aksi in user_mau.keys():
+        if tau_mau_ngapain:
+            break
+        user_mau[aksi] = tentuin_mau_apa(aksi, triggers[aksi])
+        tau_mau_ngapain = user_mau[aksi]
+
+    '''
+    # # Tentuin mau tambah apa bukan, harus yang terakhir
     if not tau_mau_ngapain:
-        trigger_tambah_task = [
+        triggers = [
             'ingatkan',
             'tambahkan'
         ]
-
-        for trigger in trigger_liat_task:
-            if boyer_moore(text=msg, pattern=trigger) != -1:
-                user_mau['lihat_task'] = True
-                tau_mau_ngapain = True
-                break
-
-    # harus yang terakhir
-    if not tau_mau_ngapain:
         user_mau['tambah_task'] = True
+    '''
 
     # Untuk di-return ke front-end, harus memiliki 'msg'
     ret = dict()
@@ -75,7 +103,7 @@ def respond():
         elif user_mau['nandain_task_selesai']:
             pass
         elif user_mau['lihat_help']:
-            pass
+            ret['msg'] = 'It\' dangerous to go alone! Take this.'
         else:  # kasih error
             ret['msg'] = handle_bingung()
     except ValueError or KeyError:
