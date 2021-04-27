@@ -1,5 +1,5 @@
 <script>
-    export let name; // deklarasi variabel bisa gini (dari main.js)
+    let name = 'Mahasiswa'; // deklarasi variabel bisa gini (dari main.js)
     let num = 0; // atau gini
 
     let kelompok = ['Jeane', 'Josep', 'Rei'];
@@ -9,15 +9,20 @@
     };
 
     const match = () => {
-        fetch(`./match?text=${document.getElementById('matching_text').value}&pattern=${document.getElementById('matching_pattern').value}`)
+        const msg = document.getElementById('msg').value
+        fetch(`./send_msg?msg=${msg}`)
             .then(res => res.json())
-            .then(res => document.getElementById('match_result').innerText = res.index_start)
-            .catch(err => console.log(`menghangdeh: ${err}`))
+            .then(res => {
+                console.log(res.msg);
+                document.getElementById('hasil_chat').innerText = res.msg;
+            })
+            .catch(err => console.log(err))
     }
+
 </script>
 
 <main>
-    <h1>Hello {name}!</h1>
+    <h1>Hai {name}</h1>
     <p>Visit the <a href='https://svelte.dev/tutorial'>Svelte tutorial</a> to learn how to build Svelte apps.</p>
     <button on:click={up}>I've been pressed {num} times</button>
     {#if num % 15 == 0}
@@ -34,16 +39,14 @@
     {/each}
 
     <form>
-        <label for='matching_text'>text</label>
-        <input id='matching_text' type='text' value='text' />
-        <label for='matching_pattern'>pattern</label>
-        <input id='matching_pattern' type='text' value='pattern' />
+        <label for='msg'>Message: </label>
+        <input id='msg' type='text' value='isi pesan mu di sini' />
         <br>
         <button type='button' on:click='{match}'>
             Find index of pattern on text!
         </button>
     </form>
-    <p>pattern was found on index <span id='match_result'>-1</span></p>
+    <p id='hasil_chat'></p>
 
     <h5>Brought to you by:</h5>
     {#each kelompok as nama_anggota}
