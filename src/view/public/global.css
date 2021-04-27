@@ -144,7 +144,7 @@ html, body {
     border-radius: 3px;
     font-size: 1em;
 }
-.msger-input {
+#msger-input {
     flex: 1;
     background: #ddd;
 }
@@ -166,4 +166,5 @@ html, body {
 
 .msg-bubble {
     word-wrap: break-word;
+    margin-bottom: 10px;
 }

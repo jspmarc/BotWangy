@@ -20,10 +20,27 @@
         msgerChat.scrollTop += 500;
     }
 
+    function isTextValid(msg) {
+        return !(!msg || /^\s+$/.exec(msg))
+    }
+
     function botResponse() {
-        const r = random(0, BOT_MSGS.length - 1);
-        const msgText = BOT_MSGS[r];
-        const delay = msgText.split(" ").length * 100;
+        const msg = document.getElementById('msger-input').value;
+        const delay = msg.split(" ").length * 100;
+        if (!isTextValid(msg)) {
+            console.log(msg)
+            return; // do nothing
+        }
+        let msgText = '';
+        fetch(`send_msg?msg=${msg}`, {
+            redirect: "manual",
+        })
+        .then(res => res.json())
+        .then(res => msgText = res.msg)
+        .catch(err => {
+            console.log(err);
+            msgText = 'Maaf, aku ga paham kamu ngomong apa 😟';
+        });
 
         setTimeout(() => {
             appendMessage(BOT_NAME, BOT_IMG, "left", msgText);
@@ -42,20 +59,6 @@
         return `${h.slice(-2)}:${m.slice(-2)}`;
     }
 
-    function random(min, max) {
-        return Math.floor(Math.random() * (max - min) + min);
-    }
-
-    export let name; // deklarasi variabel bisa gini (dari main.js)
-
-    const BOT_MSGS = [
-        "Hi, how are you?",
-        "Ohh... I can't understand what you trying to say. Sorry!",
-        "I like to play games... But I don't know how to play!",
-        "Sorry if my answers are not relevant. :))",
-        "I feel sleepy! :("
-    ];
-
     // Icons made by Freepik from www.flaticon.com
     const BOT_IMG = "";
     const PERSON_IMG = "";
@@ -66,16 +69,17 @@
     let msgerForm = null;
     let msgerInput = null;
     let msgerChat = null;
+
     window.onload = () => {
         msgerForm = get(".msger-inputarea");
-        msgerInput = get(".msger-input");
+        msgerInput = get("#msger-input");
         msgerChat = get(".msger-chat");
 
         msgerForm.addEventListener("submit", event => {
             event.preventDefault();
 
             const msgText = msgerInput.value;
-            if (!msgText) return;
+            if (!isTextValid(msgText)) return;
 
             appendMessage(PERSON_NAME, PERSON_IMG, "right", msgText);
             msgerInput.value = "";
@@ -90,7 +94,7 @@
     <section class="msger">
         <header class="msger-header">
             <div class="msger-header-title">
-                <i class="fas fa-comment-alt"></i> Bot Wangy
+                <i class="fas fa-comment-alt"></i> {BOT_NAME}
             </div>
             <div class="msger-header-options">
                 <span><i class="fas fa-cog"></i></span>
@@ -116,8 +120,8 @@
         </div>
 
         <form class="msger-inputarea">
-            <input type="text" class="msger-input" placeholder="Enter your message...">
-            <button type="submit" class="msger-send-btn" on:click={botResponse}>Send</button>
+            <input type="text" id="msger-input" placeholder="Enter your message...">
+            <button type="submit" class="msger-send-btn" on:click={botResponse}>➤</button>
         </form>
     </section>
 </main>
@@ -129,13 +133,6 @@
         /* max-width: 240px; */
         margin: 0 auto;
         height: 100%;
-    }
-
-    h1 {
-        color: #ff3e00;
-        text-transform: uppercase;
-        font-size: 4em;
-        font-weight: 100;
     }
 
     @media (min-width: 640px) {
