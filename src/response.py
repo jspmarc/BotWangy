@@ -9,7 +9,6 @@ Josep Marcello / 13519164
 '''
 
 from datetime import datetime, timedelta
-from backports.zoneinfo import ZoneInfo
 from matching import boyer_moore
 import re
 
@@ -105,12 +104,10 @@ def get_date(msg: str) -> 'list[datetime]':
 
         try:
             matches.append(datetime
-                           .strptime(clean, '%d/%m/%y')
-                           .astimezone(ZoneInfo('Asia/Jakarta')))
+                           .strptime(clean, '%d/%m/%y'))
         except ValueError:
             matches.append(datetime
-                           .strptime(clean, '%d/%m/%Y')
-                           .astimezone(ZoneInfo('Asia/Jakarta')))
+                           .strptime(clean, '%d/%m/%Y'))
 
     return matches
 
@@ -247,17 +244,14 @@ def lihat_tugas(msg: str, db) -> str:
 
         # bikin deadline
         deadline = tugas_dict['deadline']
-        year, month, day, hour, minute, second, tzinfo =\
+        year, month, day, hour, minute, second =\
             deadline.year,\
             deadline.month,\
             deadline.day,\
             deadline.hour,\
             deadline.minute,\
-            deadline.second,\
-            deadline.tzinfo
-        deadline = datetime(year, month, day, hour, minute, second,
-                            tzinfo=tzinfo)\
-            .astimezone(ZoneInfo('Asia/Jakarta'))
+            deadline.second
+        deadline = datetime(year, month, day, hour, minute, second)
         deadline_str = deadline.strftime('%Y-%m-%d')
 
         # cek tanggal permintaan user
@@ -291,7 +285,7 @@ def lihat_tugas(msg: str, db) -> str:
                 durasi *= 365
 
             # Tetep tunjukin tugas yang udah lewat deadline
-            now = datetime.now(ZoneInfo("Asia/Jakarta")).replace(microsecond=0)
+            now = datetime.now().replace(microsecond=0)
             if deadline > now + timedelta(days=durasi):
                 continue
 
