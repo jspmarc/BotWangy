@@ -10,7 +10,7 @@ Josep Marcello
 import string
 
 
-def find_last_occurance(s: str) -> dict[str, int]:
+def find_last_occurance(s: str):
     '''
     Fungsi untuk mendapatkan kemunculan terakhir dari semua karakter pada
     sebuah string
@@ -39,7 +39,7 @@ def find_last_occurance(s: str) -> dict[str, int]:
     return ret
 
 
-def boyer_moore(pattern: str, text: str) -> int:
+def boyer_moore(pattern: str, text: str):
     '''
     Fungsi untuk string matching dengan algoritma Boyer-Moore
 
