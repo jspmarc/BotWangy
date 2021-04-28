@@ -3,11 +3,11 @@ bot serba pintar dalam mencatat tugas IF ITB
 
 ## Cara deploy:
 1. `cd src/view`
+2. `npm install`
 2. `npm run build`
 3. `cd ..`
 4. `pipenv install`
-5. `pipenv shell`
-6. `python3 app.py`
+5. `pipenv run flask run`
 
 ## Development dengan auto-update/live-update:
 Pada sebuah terminal, jalankan:

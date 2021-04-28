@@ -22,7 +22,15 @@ from response import (
     tambah_tugas,
 )
 
+# global variables
 app = Flask(__name__)
+load_dotenv()
+
+cred = credentials.ApplicationDefault()
+firebase_admin.initialize_app(cred, {
+    'projectId': 'bot-wangy',
+})
+db = firestore.client()
 
 
 @app.route('/', methods=['GET', 'POST'])
@@ -75,9 +83,6 @@ def respond():
         user_mau[aksi] = tentuin_mau_apa(aksi, triggers[aksi])
         tau_mau_ngapain = user_mau[aksi]
 
-    if not tau_mau_ngapain:
-        user_mau['tambah_task'] = True
-
     # Untuk di-return ke front-end, harus memiliki 'msg'
     ret = dict()
 
@@ -121,12 +126,4 @@ def respond():
 
 
 if __name__ == '__main__':
-    load_dotenv()
-
-    cred = credentials.ApplicationDefault()
-    firebase_admin.initialize_app(cred, {
-        'projectId': 'bot-wangy',
-    })
-    db = firestore.client()
-
     app.run(port=8080, debug=True)

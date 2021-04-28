@@ -106,7 +106,7 @@
                 <div class="msg-bubble">
                     <div class="msg-info">
                         <div class="msg-info-name">{BOT_NAME}</div>
-                        <div class="msg-info-time">${formatDate(new Date())}</div>
+                        <div class="msg-info-time">{formatDate(new Date())}</div>
                     </div>
 
                     <div class="msg-text">
