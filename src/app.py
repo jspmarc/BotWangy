@@ -106,7 +106,7 @@ def respond():
             ret['msg'] = help_msg(db)
         else:  # kasih error
             ret['msg'] = handle_bingung()
-    except ValueError or KeyError:
+    except ValueError, KeyError, IndexError:
         ret['msg'] = handle_bingung()
 
     return jsonify(ret)

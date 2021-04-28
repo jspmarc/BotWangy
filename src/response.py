@@ -413,6 +413,58 @@ def lihat_deadline(msg: str, db) -> str:
     return ret
 
 
+def tambah_tugas(msg: str, db) -> str:
+    '''
+    Fungsi untuk menambahkan list tugas ke database
+
+    Parameters
+    ----------
+    msg : str
+        message dari user
+    db : firestore database
+        database untuk mendapatkan data
+
+    Returns
+    -------
+    str
+        balasan dari bot
+        ID, tanggal, kode mata kuliah, jenis tugas, topik tugas
+
+    Throws
+    ------
+    IndexError
+        Kalau tidak punya tanggal
+    '''
+    # tanggal, kode mk, jenis tugas, topik tugas
+    with_date = False
+    with_course_id = False
+    with_jenis_tugas = False
+    with_topic = False
+
+    date = extract_date(msg)[0]
+    with_date = True
+
+    course_id = extract_course_id(msg)
+    with_course_id = course_id is not None
+
+    for triggers in trigger_jenis_tugas:
+        with_jenis_tugas = boyer_moore(text=msg, pattern=triggers) != -1
+        if with_jenis_tugas:
+            break
+    
+    return ''
+
+
+def extract_course_id(msg: str) -> str:
+    matches = re.findall(r'[a-zA-Z]{2}\d{4}', msg, flags=re.IGNORECASE)
+
+    try:
+        res = matches[0]
+    except IndexError:
+        res = None
+    return res
+
+
 def handle_bingung():
     return 'Maaf, aku ga paham kamu ngomong apa 😵'
 
