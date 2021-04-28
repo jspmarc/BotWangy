@@ -61,7 +61,7 @@
 
     // Icons made by Freepik from www.flaticon.com
     const BOT_IMG = "/bot_wangy.gif";
-    const PERSON_IMG = "";
+    const PERSON_IMG = "/user_avatar.jpg";
     const BOT_NAME = "Bot Wangy";
     const PERSON_NAME = "Mahasiswa";
 
@@ -101,10 +101,7 @@
         </header>
         <div class="msger-chat">
             <div class="msg left-msg">
-                <div
-                    class="msg-img"
-                    style="background-image: linear-gradient(to top, #f0f3fa 0%, #eef1f5 100%);">
-                </div>
+                <div class="msg-img" style="background-image: url({BOT_IMG})"></div>
 
                 <div class="msg-bubble">
                     <div class="msg-info">
