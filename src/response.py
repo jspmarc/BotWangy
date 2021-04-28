@@ -485,8 +485,10 @@ def update_tugas(msg: str, db) -> str:
     for tugas in all_tugas:
         ada_tugasnya = task_id == str(tugas.id)
         if ada_tugasnya:
-            tugas_dict = tugas.to_dict()
+            # tugas_dict = tugas.to_dict()
             # deadline_baru = get_date(msg)
+            tugas_ref.document(u'{}'.format(task_id))
+            tugas_ref.update({u'deadline': date})
             tugas_found = True
             # TODO: ganti tanggal deadline tugas = date
 
@@ -516,7 +518,9 @@ def clear_tugas(msg: str, db) -> str:
         tugas_dict = tugas.to_dict()
         ada_tugasnya = task_id == str(tugas.id)
         if ada_tugasnya:
-            tugas_dict['selesai'] = True
+            # tugas_dict['selesai'] = True
+            tugas_ref.document(u'{}'.format(task_id))
+            tugas_ref.update({u'selesai': True})
             tugas_found = True
             # id_clear_tugas = tugas.id
             break
