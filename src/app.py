@@ -88,7 +88,7 @@ def respond():
 
     try:
         if user_mau['tambah_task']:
-            pass
+            ret['msg'] = tambah_tugas(msg, db)
         elif user_mau['lihat_task']:
             ret['msg'] = lihat_tugas(msg, db)
         elif user_mau['lihat_deadline']:
