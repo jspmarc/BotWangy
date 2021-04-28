@@ -112,7 +112,7 @@
                     </div>
 
                     <div class="msg-text">
-                        Halo? Selamat datang di Bot Wangy! Silahkan masukkan pesan Anda!
+                        Halo! Selamat datang di Bot Wangy! Silahkan masukkan pesan Anda!
                     </div>
                 </div>
             </div>

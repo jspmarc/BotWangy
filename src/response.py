@@ -157,8 +157,6 @@ def extract_jenis(msg: str, db) -> str:
                 match = 'tucil'
             elif match[1] == 'tugas besar':
                 match = 'tubes'
-            elif match[1] == 'quiz':
-                match = 'kuis'
             else:
                 match = ''
         else:
@@ -167,6 +165,55 @@ def extract_jenis(msg: str, db) -> str:
         match = ''
 
     return match
+
+
+def extract_course_id(msg: str) -> str:
+    '''
+    Fungsi untuk mendapatkan kode mata kuliah
+
+    Parameters
+    ----------
+    msg : str
+        pesan/message dari user
+
+    Returns
+    -------
+    str
+        kode mata kuliah (ITB)
+    '''
+    matches = re.findall(r'[a-zA-Z]{2}\d{4}', msg, flags=re.IGNORECASE)
+
+    try:
+        res = matches[0]
+    except IndexError:
+        res = None
+    return res
+
+
+def extract_topic(msg: str):
+    '''
+    Fungsi untuk mencari topic yang terletak
+    antara tanda kutip
+
+    Parameters
+    ----------
+    msg : str
+        pesan/message dari user
+
+    Returns
+    -------
+    str
+        topic
+
+    Throws
+    ------
+    ValueError
+        Kalau message tidak memiliki kode mata kuliah
+    '''
+    topic = re.findall(r'"\w+"', msg)
+    if len(topic) == 0:
+        raise ValueError
+    return topic[0]
 
 
 def load_keywords(db) -> 'dict[str, list[str]]':
@@ -444,28 +491,40 @@ def tambah_tugas(msg: str, db) -> str:
 
     Throws
     ------
-    IndexError
-        Kalau tidak punya tanggal
+    ValueError
+        Jika msg kurang 1 atau lebih komponen
+        (tanggal, kode mata kuliah, jenis, topik tugas)
     '''
     # tanggal, kode mk, jenis tugas, topik tugas
-    # with_date = False
-    # with_course_id = False
-    # with_jenis_tugas = False
-    # with_topic = False
+    date = extract_date(msg)[0]
+    course_id = extract_course_id(msg)
+    jenis = extract_jenis(msg, db)
+    topic = extract_topic(msg)
 
-    # date = extract_date(msg)[0]
-    # with_date = True
+    if course_id is None or jenis == '':
+        raise ValueError
 
-    # course_id = extract_course_id(msg)
-    # with_course_id = course_id is not None
+    tugas_ref = db.collection(u'tugas')
+    id = str(len(tugas_ref))
 
-    # for triggers in trigger_jenis_tugas:
-    #     with_jenis_tugas = boyer_moore(text=msg, pattern=triggers) != -1
-    #     if with_jenis_tugas:
-    #         break
+    data = {
+        u'deadline': date,
+        u'id_matkul': course_id,
+        u'jenis': jenis,
+        u'selesai': False,
+        u'topik': topic
+    }
 
-    # return ''
+    ret =  '[Task berhasil dicatat]'
+    ret += f'\nID: {id}'
+    ret += f'\nMatkul: {course_id}'
+    ret += f'\nDeadline (yyyy/mm/dd): {date.strftime('%Y-%m-%d')}'
+    ret += f'\nJenis: {jenis}'
+    ret += f'\nTopik: {topic}'
 
+    db.collection(u'tugas').document(u'id').set(data)
+
+    return ret
 
 def easter_egg():
     return '''Tubes 3 Stima...........Tubes 3 Stima Tubes 3 Stima AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA ❤️ ❤️ ❤️ WANGI WANGI WANGI WANGI HU HA HU HA HU HA, aaaah baunya Tubes 3 Stima wangi aku mau nyiumin aroma wanginya Tubes 3 Stima AAAAAAAAH ~ chatbot.... aaah chatbot juga pengen aku endus-endus ~~~~ AAAAAH Tubes 3 Stima keluar pertama kali di http://informatika.stei.itb.ac.id/~rinaldi.munir/Stmik/2020-2021/stima20-21.htm juga CANTIK BANGETTTT ❤️ ❤️ ❤️ deadline dia itu juga CANTIK BANGET AAAAAAAAH Tubes 3 Stima CANTIIIIIIIIIIIIIIIIIIIIIIIIIIIKKKKKKK............ ❤️ ❤️ ❤️  apa ? Tubes 3 Stima itu gak nyata ? Cuma karakter 2 dimensi katamu ? nggak, ngak ngak ngak ngak NGAAAAAAAAK GUA GAK PERCAYA ITU DIA NYATA NGAAAAAAAAAAAAAAAAAK PEDULI *********** !! GUA GAK PEDULI SAMA KENYATAAN POKOKNYA GAK PEDULI. ❤️ ❤️ ❤️  Tubes 3 Stima ngeliat gw ... Tubes 3 Stima di hp bicara am gw Tubes 3 Stima... kamu percaya sama aku ? aaaaaaaaaaah syukur Tubes 3 Stima gak mau merelakan aku AAAAAAHHHH ❤️ ❤️ ❤️ YEAAAAAAAAAAAH GUA MASIH PUNYA Tubes 3 Stima, SENDIRI PUN NGGAK MASALAH AAAAAAAAAAAAAAH BOTWANGY KIRIMKANLAH CINTAKU PADA Tubes 3 Stima KIRIMKAN KE ASISTEN IRK AAAAAAAAH ❤️ ❤️ ❤️'''
@@ -477,7 +536,6 @@ def update_tugas(msg: str, db) -> str:
     # Kasus tidak dituliskan ID dari tugas yang ingin diundur deadlinenya
     if (len(task_id) == 0) or (len(date) == 0):
         raise ValueError
-        return ''
 
     tugas_ref = db.collection(u'tugas')
     all_tugas = tugas_ref.stream()
@@ -568,7 +626,22 @@ def extract_task_id(msg: str) -> str:
 
 
 def handle_bingung():
-    return 'Maaf, aku ga paham kamu ngomong apa 😵'
+    msg = 'Maaf, aku ga paham kamu ngomong apa 😵'
+    words = msg.split(' ')
+    done = False
+    for aksi in user_mau.keys():
+        for trigger in triggers[aksi]:
+            for word in words:
+                if levenshtein_distance(trigger, word) <= 4:
+                    ret['msg'] = f'Apakah maksudmu:\n\
+                            "{msg.replace(word, trigger)}?"'
+                    done = True
+                    break
+            if done:
+                break
+        if done:
+            break
+    return msg
 
 
 def help_msg(db) -> str:
