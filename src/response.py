@@ -211,7 +211,7 @@ def extract_topic(msg: str) -> str:
         Kalau message tidak memiliki kode mata kuliah
     '''
     try:
-        topic = re.findall(r'"[\w\s]+"', msg)
+        topic = re.findall(r'"[\w\s:\',.?!><\]\[\}\{=+\-\)\(;]+"', msg)
         res = re.sub(r'"', '', topic[0])
     except IndexError:
         res = None
@@ -502,7 +502,7 @@ def tambah_tugas(msg: str, db) -> str:
     jenis = extract_jenis(msg, db)
     topic = extract_topic(msg)
     if course_id is None or jenis == '' or topic is None:
-        raise ValueError
+        raise ValueError(f'{"ID Matkul" if course_id is None else "Jenis tugas" if jenis == "" else "Topik tugas"} salah')
 
     tanggal = date.strftime('%Y-%m-%d')
 
@@ -516,6 +516,7 @@ def tambah_tugas(msg: str, db) -> str:
     tugas_ref = db.collection(u'tugas')
     all_tugas = tugas_ref.stream()
 
+    id_task = '1'
     for tugas in all_tugas:
         id_task = str(int(tugas.id) + 1)
 
@@ -603,7 +604,6 @@ def extract_task_id(msg: str) -> str:
 
 
 def handle_bingung():
-    print('Bot bingung')
     return 'Maaf, aku ga paham kamu ngomong apa 😵'
 
 

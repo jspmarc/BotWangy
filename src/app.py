@@ -109,6 +109,7 @@ def respond():
             ret['msg'] = easter_egg()
             print('User melihat easter egg')
         else:  # kasih error
+            print('Bot bingung')
             ret['msg'] = handle_bingung()
 
             words = msg.split(' ')
@@ -116,7 +117,9 @@ def respond():
             for aksi in user_mau.keys():
                 for trigger in triggers[aksi]:
                     for word in words:
-                        if levenshtein_distance(trigger, word) <= 3:
+                        lev = levenshtein_distance(trigger, word)
+                        percantage_diff = lev/len(trigger) * 100
+                        if percantage_diff <= 40:
                             ret['msg'] = f'Apakah maksudmu:\n\
                                     "{msg.replace(word, trigger)}"?'
                             done = True
@@ -126,6 +129,7 @@ def respond():
                 if done:
                     break
     except (ValueError, KeyError, IndexError) as e:
+        print('Message user ada yang salah')
         print(e)
         ret['msg'] = handle_bingung()
 
