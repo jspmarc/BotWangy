@@ -99,6 +99,8 @@ def respond():
             pass
         elif user_mau['lihat_help']:
             ret['msg'] = help_msg(db)
+        elif user_mau['easter_egg']:
+            ret['msg'] = easter_egg()
         else:  # kasih error
             ret['msg'] = handle_bingung()
     except ValueError or KeyError or IndexError:
