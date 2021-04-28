@@ -10,7 +10,6 @@ Josep Marcello / 13519164
 
 from datetime import datetime, timedelta
 from matching import boyer_moore
-import hashlib
 import re
 
 
@@ -213,7 +212,7 @@ def extract_topic(msg: str) -> str:
     '''
     try:
         topic = re.findall(r'"[\w\s]+"', msg)
-        res = re.sub(r'"','',topic[0])
+        res = re.sub(r'"', '', topic[0])
     except IndexError:
         res = None
     return res
@@ -499,7 +498,7 @@ def tambah_tugas(msg: str, db) -> str:
         (tanggal, kode mata kuliah, jenis, topik tugas)
     '''
     date = extract_date(msg)[0]
-    course_id = extract_course_id(msg)
+    course_id = extract_course_id(msg).upper()
     jenis = extract_jenis(msg, db)
     topic = extract_topic(msg)
     if course_id is None or jenis == '' or topic is None:
@@ -515,8 +514,11 @@ def tambah_tugas(msg: str, db) -> str:
         u'topik': topic
     }
 
-    hash_id = hashlib.sha1((tanggal + course_id + jenis + topic).encode())
-    id_task = hash_id.hexdigest()[:15]
+    tugas_ref = db.collection(u'tugas')
+    all_tugas = tugas_ref.stream()
+
+    for tugas in all_tugas:
+        id_task = str(int(tugas.id) + 1)
 
     ret =  '[Task berhasil dicatat]'
     ret += f'\nID: {id_task}'
@@ -527,14 +529,16 @@ def tambah_tugas(msg: str, db) -> str:
 
     db.collection(u'tugas').document(id_task).set(data)
 
-    print(ret)
     return ret
 
 
 def easter_egg():
-    return '''Tubes 3 Stima...........Tubes 3 Stima Tubes 3 Stima AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA ❤️ ❤️ ❤️ WANGI WANGI WANGI WANGI HU HA HU HA HU HA, aaaah baunya Tubes 3 Stima wangi aku mau nyiumin aroma wanginya Tubes 3 Stima AAAAAAAAH ~ chatbot.... aaah chatbot juga pengen aku endus-endus ~~~~ AAAAAH Tubes 3 Stima keluar pertama kali di http://informatika.stei.itb.ac.id/~rinaldi.munir/Stmik/2020-2021/stima20-21.htm juga CANTIK BANGETTTT ❤️ ❤️ ❤️ deadline dia itu juga CANTIK BANGET AAAAAAAAH Tubes 3 Stima CANTIIIIIIIIIIIIIIIIIIIIIIIIIIIKKKKKKK............ ❤️ ❤️ ❤️ 
- apa ? Tubes 3 Stima itu gak nyata ? Cuma karakter 2 dimensi katamu ? nggak, ngak ngak ngak ngak NGAAAAAAAAK GUA GAK PERCAYA ITU DIA NYATA NGAAAAAAAAAAAAAAAAAK PEDULI *********** !! GUA GAK PEDULI SAMA KENYATAAN POKOKNYA GAK PEDULI. ❤️ ❤️ ❤️ 
- Tubes 3 Stima ngeliat gw ... Tubes 3 Stima di hp bicara am gw Tubes 3 Stima... kamu percaya sama aku ? aaaaaaaaaaah syukur Tubes 3 Stima gak mau merelakan aku AAAAAAHHHH ❤️ ❤️ ❤️ YEAAAAAAAAAAAH GUA MASIH PUNYA Tubes 3 Stima, SENDIRI PUN NGGAK MASALAH AAAAAAAAAAAAAAH BOTWANGY KIRIMKANLAH CINTAKU PADA Tubes 3 Stima KIRIMKAN KE ASISTEN IRK AAAAAAAAH ❤️ ❤️ ❤️'''
+    try:
+        with open('view/public/copypasta.txt', 'r') as f:
+            msg = f.read()
+    except Exception:
+        msg = '┻━┻ ︵ ＼\\(\'0\')/／ ︵ ┻━┻ FLIP ALL THE TABLES'
+    return msg
 
 
 def update_tugas(msg: str, db) -> str:
@@ -591,29 +595,6 @@ def clear_tugas(msg: str, db) -> str:
         res = "Tugas " + task_id + " tidak terdapat dalam daftar tugas"
     # TODO: Write ke firebase db
 
-    return res
-
-
-def extract_course_id(msg: str) -> str:
-    '''
-    Fungsi untuk mendapatkan id matkul dari message user. Jika di message tidak
-    ada, maka akan dikembalikan None
-
-    Parameters
-    ----------
-    msg : str
-        message user
-
-    Returns
-    -------
-    ID matkul dari pesan user jika ada, selain itu None
-    '''
-    matches = re.findall(r'[a-zA-Z]{2}\d{4}', msg, flags=re.IGNORECASE)
-
-    try:
-        res = matches[0].upper()
-    except IndexError:
-        res = None
     return res
 
 
