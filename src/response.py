@@ -187,7 +187,7 @@ def extract_course_id(msg: str) -> str:
         res = matches[0]
     except IndexError:
         res = None
-    return res
+    return res.upper()
 
 
 def extract_topic(msg: str) -> str:
@@ -454,7 +454,7 @@ def lihat_deadline(msg: str, db) -> str:
     for tugas in all_tugas:
         tugas = tugas.to_dict()
         if tugas['jenis'] != jenis_tugas_request\
-           or tugas['id_matkul'] != id_matkul_request:
+           or tugas['id_matkul'].lower() != id_matkul_request.lower():
             continue
         deadline_dirty = tugas['deadline']
         deadline = datetime(
@@ -494,7 +494,7 @@ def tambah_tugas(msg: str, db) -> str:
         (tanggal, kode mata kuliah, jenis, topik tugas)
     '''
     date = extract_date(msg)[0]
-    course_id = extract_course_id(msg).upper()
+    course_id = extract_course_id(msg)
     jenis = extract_jenis(msg, db)
     topic = extract_topic(msg)
     if course_id is None or jenis == '' or topic is None:
