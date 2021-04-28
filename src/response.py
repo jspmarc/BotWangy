@@ -10,6 +10,7 @@ Josep Marcello / 13519164
 
 from datetime import datetime, timedelta
 from matching import boyer_moore
+import hashlib
 import re
 
 
@@ -190,7 +191,7 @@ def extract_course_id(msg: str) -> str:
     return res
 
 
-def extract_topic(msg: str):
+def extract_topic(msg: str) -> str:
     '''
     Fungsi untuk mencari topic yang terletak
     antara tanda kutip
@@ -210,10 +211,12 @@ def extract_topic(msg: str):
     ValueError
         Kalau message tidak memiliki kode mata kuliah
     '''
-    topic = re.findall(r'"\w+"', msg)
-    if len(topic) == 0:
-        raise ValueError
-    return topic[0]
+    try:
+        topic = re.findall(r'"[\w\s]+"', msg)
+        res = re.sub(r'"','',topic[0])
+    except IndexError:
+        res = None
+    return res
 
 
 def load_keywords(db) -> 'dict[str, list[str]]':
@@ -495,35 +498,36 @@ def tambah_tugas(msg: str, db) -> str:
         Jika msg kurang 1 atau lebih komponen
         (tanggal, kode mata kuliah, jenis, topik tugas)
     '''
-    # tanggal, kode mk, jenis tugas, topik tugas
     date = extract_date(msg)[0]
     course_id = extract_course_id(msg)
     jenis = extract_jenis(msg, db)
     topic = extract_topic(msg)
-
-    if course_id is None or jenis == '':
+    if course_id is None or jenis == '' or topic is None:
         raise ValueError
 
-    tugas_ref = db.collection(u'tugas')
-    id = str(len(tugas_ref))
+    tanggal = date.strftime('%Y-%m-%d')
 
     data = {
-        u'deadline' = date,
-        u'id_matkul' = course_id,
-        u'jenis' = jenis,
-        u'selesai' = False,
-        u'topik' = topic
+        u'deadline': date,
+        u'id_matkul': course_id,
+        u'jenis': jenis,
+        u'selesai': False,
+        u'topik': topic
     }
 
+    hash_id = hashlib.sha1((tanggal + course_id + jenis + topic).encode())
+    id_task = hash_id.hexdigest()[:15]
+
     ret =  '[Task berhasil dicatat]'
-    ret += f'\nID: {id}'
+    ret += f'\nID: {id_task}'
     ret += f'\nMatkul: {course_id}'
-    ret += f'\nDeadline (yyyy/mm/dd): {date.strftime('%Y-%m-%d')}'
+    ret += f'\nDeadline (yyyy/mm/dd): {tanggal}'
     ret += f'\nJenis: {jenis}'
     ret += f'\nTopik: {topic}'
 
-    db.collection(u'tugas').document(u'id').set(data)
+    db.collection(u'tugas').document(id_task).set(data)
 
+    print(ret)
     return ret
 
 
