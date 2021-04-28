@@ -213,7 +213,7 @@ def extract_topic(msg: str) -> str:
     '''
     try:
         topic = re.findall(r'"[\w\s]+"', msg)
-        res = re.sub(r'"','',topic[0])
+        res = re.sub(r'"', '', topic[0])
     except IndexError:
         res = None
     return res
@@ -532,9 +532,12 @@ def tambah_tugas(msg: str, db) -> str:
 
 
 def easter_egg():
-    return '''Tubes 3 Stima...........Tubes 3 Stima Tubes 3 Stima AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA ❤️ ❤️ ❤️ WANGI WANGI WANGI WANGI HU HA HU HA HU HA, aaaah baunya Tubes 3 Stima wangi aku mau nyiumin aroma wanginya Tubes 3 Stima AAAAAAAAH ~ chatbot.... aaah chatbot juga pengen aku endus-endus ~~~~ AAAAAH Tubes 3 Stima keluar pertama kali di http://informatika.stei.itb.ac.id/~rinaldi.munir/Stmik/2020-2021/stima20-21.htm juga CANTIK BANGETTTT ❤️ ❤️ ❤️ deadline dia itu juga CANTIK BANGET AAAAAAAAH Tubes 3 Stima CANTIIIIIIIIIIIIIIIIIIIIIIIIIIIKKKKKKK............ ❤️ ❤️ ❤️ 
- apa ? Tubes 3 Stima itu gak nyata ? Cuma karakter 2 dimensi katamu ? nggak, ngak ngak ngak ngak NGAAAAAAAAK GUA GAK PERCAYA ITU DIA NYATA NGAAAAAAAAAAAAAAAAAK PEDULI *********** !! GUA GAK PEDULI SAMA KENYATAAN POKOKNYA GAK PEDULI. ❤️ ❤️ ❤️ 
- Tubes 3 Stima ngeliat gw ... Tubes 3 Stima di hp bicara am gw Tubes 3 Stima... kamu percaya sama aku ? aaaaaaaaaaah syukur Tubes 3 Stima gak mau merelakan aku AAAAAAHHHH ❤️ ❤️ ❤️ YEAAAAAAAAAAAH GUA MASIH PUNYA Tubes 3 Stima, SENDIRI PUN NGGAK MASALAH AAAAAAAAAAAAAAH BOTWANGY KIRIMKANLAH CINTAKU PADA Tubes 3 Stima KIRIMKAN KE ASISTEN IRK AAAAAAAAH ❤️ ❤️ ❤️'''
+    try:
+        with open('view/public/copypasta.txt', 'r') as f:
+            msg = f.read()
+    except Exception:
+        msg = '┻━┻ ︵ ＼\\(\'0\')/／ ︵ ┻━┻ FLIP ALL THE TABLES'
+    return msg
 
 
 def update_tugas(msg: str, db) -> str:
