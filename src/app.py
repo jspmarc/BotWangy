@@ -17,7 +17,8 @@ from response import (
     handle_bingung,
     help_msg,
     lihat_deadline,
-    load_keywords
+    load_keywords,
+    easter_egg,
     # tambah_tugas,
 )
 
@@ -48,6 +49,7 @@ def respond():
     user_mau['update_task'] = False
     user_mau['nandain_task_selesai'] = False
     user_mau['lihat_help'] = False
+    user_mau['easter_egg'] = False
 
     triggers = load_keywords(db)
 
