@@ -13,7 +13,7 @@ from matching import boyer_moore
 import re
 
 
-def get_date(msg: str) -> 'list[datetime]':
+def extract_date(msg: str) -> 'list[datetime]':
     '''
     Fungsi untuk mengekstrak tanggal dari string. Format tanggal yang valid:
     <tanggal/nomor hari><delimiter><bulan><delimiter><tahun>
@@ -112,6 +112,63 @@ def get_date(msg: str) -> 'list[datetime]':
     return matches
 
 
+def extract_jenis(msg: str, db) -> str:
+    '''
+    Fungsi untuk mendapatkan jenis tugas dari string. Mengembalikan jenis tugas
+    yang dimaksud user. Jika jenis tugas tidak jelas atau tidak ada, maka akan
+    dikembalikan string kosong.
+    Jenis tugas yang ada:
+        - uas
+        - uts
+        - praktikum (atau prak)
+        - tubes (atau tugas besar)
+        - tucil (atau tugas kecil)
+        - kuis (atau quiz)
+
+    Parameters
+    ----------
+    msg : str
+        pesan/message dari user
+    db : firestore database
+        database untuk mendapatkan data
+
+    Returns
+    -------
+    str
+        jenis user yang sebenarnya (uts, uas, praktikum, tubes, tucil, kuis)
+    '''
+    possible_keywords = load_keywords(db)['jenis_tugas']
+    regex_kata_kunci = '('
+    i = 0
+    for keyword in possible_keywords:
+        regex_kata_kunci += keyword
+        regex_kata_kunci += '|' if i < len(possible_keywords) - 1 else ''
+        i += 1
+    regex_kata_kunci += ')'
+    regex = regex_kata_kunci + r'|(prak|tugas kecil|tugas besar|quiz)'
+    try:
+        match = re.findall(regex, msg, flags=re.IGNORECASE)[0]
+        if len(match[0]) == 0:
+            if match[1] == 'prak':
+                match = 'praktikum'
+            elif match[1] == 'quiz':
+                match = 'kuis'
+            elif match[1] == 'tugas kecil':
+                match = 'tucil'
+            elif match[1] == 'tugas besar':
+                match = 'tubes'
+            elif match[1] == 'quiz':
+                match = 'kuis'
+            else:
+                match = ''
+        else:
+            match = match[0]
+    except IndexError:
+        match = ''
+
+    return match
+
+
 def load_keywords(db) -> 'dict[str, list[str]]':
     '''
     Fungsi untuk loading keywords dari database
@@ -130,7 +187,6 @@ def load_keywords(db) -> 'dict[str, list[str]]':
     # load keyword untuk jenis tugas
     jenis_tugas_ref = db.collection(u'keywords').document(u'keywords')
     keywords = jenis_tugas_ref.get().to_dict()
-    print(keywords)
 
     return keywords
 
@@ -235,19 +291,18 @@ def lihat_tugas(msg: str, db) -> str:
             if pake_tanggal_satuan:
                 break
 
-    # Tentuin user-nya mau jenis task (tugas) tertentu atau nggak
-    matching_patt = None
-    jenis_tugas = load_keywords(db)['jenis_tugas']
-    print(jenis_tugas)
-    for jenis in jenis_tugas:
-        if boyer_moore(text=msg, pattern=jenis) != -1:
-            matching_patt = jenis
-
     i = 1
     for tugas in all_tugas:
         tugas_dict = tugas.to_dict()
 
         if (tugas_dict['selesai']):
+            continue
+
+        # Tentuin user-nya mau jenis task (tugas) tertentu atau nggak
+        jenis_tugas_permintaan = extract_jenis(msg, db)
+        print(jenis_tugas_permintaan)
+        if len(jenis_tugas_permintaan) != 0\
+                and tugas_dict['jenis'] != jenis_tugas_permintaan:
             continue
 
         # bikin deadline
@@ -299,7 +354,7 @@ def lihat_tugas(msg: str, db) -> str:
 
         elif pake_tanggal_range:
             try:
-                date1, date2, *_ = get_date(msg)
+                date1, date2, *_ = extract_date(msg)
             except ValueError:
                 return fail('mendapatkan tanggal pada tanggal range')
             if deadline <= date1 or deadline >= date2:
@@ -313,9 +368,6 @@ def lihat_tugas(msg: str, db) -> str:
         else:
             jenis = tugas_dict['jenis']
 
-        if matching_patt is not None and matching_patt != jenis:
-            continue
-
         space_4 = '    '
         res += f'{i}. ID: {tugas.id}'
         res += f'\n{space_4}Matkul: {tugas_dict["id_matkul"]}'
@@ -325,6 +377,40 @@ def lihat_tugas(msg: str, db) -> str:
         i += 1
 
     return res
+
+
+def lihat_deadline(msg: str, db) -> str:
+    '''
+    Fungsi untuk mendapatkan deadline tugas-tugas dari sebuah matkul
+
+    Parameters
+    ----------
+    msg : str
+        message dari user
+    db : firestore database
+        database untuk mendapatkan data
+
+    Returns
+    -------
+    str
+        balasan dari bot
+
+    Throws
+    ------
+    KeyError
+        Kalau nama bulan pada msg invalid (tidak sesuai dengan KBBI)
+    ValueError
+        Kalau format tanggal pada msg salah
+    '''
+    ret = 'aku ganteng'
+    '''
+    Contoh query:
+    'Deadlline tugas IF2211 itu kapan?'
+    Langkah-langkah:
+    1. Cari nama matkulnya
+    2. Cari jenisnya
+    '''
+    return ret
 
 
 def handle_bingung():
@@ -379,4 +465,4 @@ def help_msg(db) -> str:
 
 if __name__ == '__main__':
     coba = 'Hari ini tanggal 27-April/2021 : 27 04/2021 : 27/04-2021'
-    print(get_date(coba))
+    print(extract_date(coba))
