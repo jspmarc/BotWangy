@@ -468,6 +468,65 @@ def easter_egg():
     return '''Tubes 3 Stima...........Tubes 3 Stima Tubes 3 Stima AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA ❤️ ❤️ ❤️ WANGI WANGI WANGI WANGI HU HA HU HA HU HA, aaaah baunya Tubes 3 Stima wangi aku mau nyiumin aroma wanginya Tubes 3 Stima AAAAAAAAH ~ chatbot.... aaah chatbot juga pengen aku endus-endus ~~~~ AAAAAH Tubes 3 Stima keluar pertama kali di http://informatika.stei.itb.ac.id/~rinaldi.munir/Stmik/2020-2021/stima20-21.htm juga CANTIK BANGETTTT ❤️ ❤️ ❤️ deadline dia itu juga CANTIK BANGET AAAAAAAAH Tubes 3 Stima CANTIIIIIIIIIIIIIIIIIIIIIIIIIIIKKKKKKK............ ❤️ ❤️ ❤️  apa ? Tubes 3 Stima itu gak nyata ? Cuma karakter 2 dimensi katamu ? nggak, ngak ngak ngak ngak NGAAAAAAAAK GUA GAK PERCAYA ITU DIA NYATA NGAAAAAAAAAAAAAAAAAK PEDULI *********** !! GUA GAK PEDULI SAMA KENYATAAN POKOKNYA GAK PEDULI. ❤️ ❤️ ❤️  Tubes 3 Stima ngeliat gw ... Tubes 3 Stima di hp bicara am gw Tubes 3 Stima... kamu percaya sama aku ? aaaaaaaaaaah syukur Tubes 3 Stima gak mau merelakan aku AAAAAAHHHH ❤️ ❤️ ❤️ YEAAAAAAAAAAAH GUA MASIH PUNYA Tubes 3 Stima, SENDIRI PUN NGGAK MASALAH AAAAAAAAAAAAAAH BOTWANGY KIRIMKANLAH CINTAKU PADA Tubes 3 Stima KIRIMKAN KE ASISTEN IRK AAAAAAAAH ❤️ ❤️ ❤️'''
 
 
+def update_tugas(msg: str, db) -> str:
+    task_id = extract_task_id(msg)
+    date = extract_date(msg)[0]
+    # Kasus tidak dituliskan ID dari tugas yang ingin diundur deadlinenya
+    if (len(task_id) == 0) or (len(date) == 0):
+        raise ValueError
+        return ''
+
+    tugas_ref = db.collection(u'tugas')
+    all_tugas = tugas_ref.stream()
+    tugas_found = False
+    for tugas in all_tugas:
+        ada_tugasnya = task_id == str(tugas.id)
+        if ada_tugasnya:
+            tugas_dict = tugas.to_dict()
+            # deadline_baru = get_date(msg)
+            tugas_found = True
+            # TODO: ganti tanggal deadline tugas = date
+
+            # id_clear_tugas = tugas.id
+            break
+
+    if tugas_found:
+        res = "Deadline tugas " + task_id + " berhasil diundur"
+    else:
+        res = "Tugas " + task_id + " tidak terdapat dalam daftar tugas"
+    # TODO: Write ke firebase db
+
+    return res
+
+
+def clear_tugas(msg: str, db) -> str:
+    task_id = extract_task_id(msg)
+    # Kasus tidak dituliskan ID dari tugas yang ingin ditandai selesai
+    if len(task_id) == 0:
+        raise ValueError
+        return ''
+
+    tugas_ref = db.collection(u'tugas')
+    all_tugas = tugas_ref.stream()
+    tugas_found = False
+    for tugas in all_tugas:
+        tugas_dict = tugas.to_dict()
+        ada_tugasnya = task_id == str(tugas.id)
+        if ada_tugasnya:
+            tugas_dict['selesai'] = True
+            tugas_found = True
+            # id_clear_tugas = tugas.id
+            break
+
+    if tugas_found:
+        res = "Tugas " + task_id + " berhasil ditandai selesai"
+    else:
+        res = "Tugas " + task_id + " tidak terdapat dalam daftar tugas"
+    # TODO: Write ke firebase db
+
+    return res
+
+
 def extract_course_id(msg: str) -> str:
     '''
     Fungsi untuk mendapatkan id matkul dari message user. Jika di message tidak
@@ -486,6 +545,16 @@ def extract_course_id(msg: str) -> str:
 
     try:
         res = matches[0].upper()
+    except IndexError:
+        res = None
+    return res
+
+
+def extract_task_id(msg: str) -> str:
+    matches = re.findall(r'\d', msg, flags=re.IGNORECASE)
+
+    try:
+        res = matches[0]
     except IndexError:
         res = None
     return res

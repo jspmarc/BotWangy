@@ -10,13 +10,14 @@ from firebase_admin import firestore
 # others
 import re
 from matching import boyer_moore
-from response import lihat_tugas, handle_bingung, help_msg, lihat_deadline,\
-                     load_keywords  #, tambah_tugas
 from response import (
     lihat_tugas,
+    update_tugas,
+    clear_tugas,
     handle_bingung,
     help_msg,
     lihat_deadline,
+    load_keywords
     # tambah_tugas,
 )
 
@@ -93,10 +94,9 @@ def respond():
         elif user_mau['lihat_deadline']:
             ret['msg'] = lihat_deadline(msg, db)
         elif user_mau['update_task']:
-            # ret['msg'] = tambah_tugas(msg, db)
-            pass
+            ret['msg'] = update_tugas(msg, db)
         elif user_mau['nandain_task_selesai']:
-            pass
+            ret['msg'] = clear_tugas(msg, db)
         elif user_mau['lihat_help']:
             ret['msg'] = help_msg(db)
         elif user_mau['easter_egg']:
