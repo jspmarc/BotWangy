@@ -60,7 +60,7 @@
     }
 
     // Icons made by Freepik from www.flaticon.com
-    const BOT_IMG = "";
+    const BOT_IMG = "/bot_wangy.gif";
     const PERSON_IMG = "";
     const BOT_NAME = "Bot Wangy";
     const PERSON_NAME = "Mahasiswa";
