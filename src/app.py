@@ -9,7 +9,7 @@ from firebase_admin import credentials
 from firebase_admin import firestore
 # others
 import re
-from matching import boyer_moore
+from matching import boyer_moore, levenshtein_distance
 from response import (
     lihat_tugas,
     update_tugas,
@@ -18,7 +18,8 @@ from response import (
     help_msg,
     lihat_deadline,
     load_keywords,
-    tambah_tugas
+    easter_egg,
+    tambah_tugas,
 )
 
 app = Flask(__name__)
@@ -48,6 +49,7 @@ def respond():
     user_mau['update_task'] = False
     user_mau['nandain_task_selesai'] = False
     user_mau['lihat_help'] = False
+    user_mau['easter_egg'] = False
 
     triggers = load_keywords(db)
 
@@ -89,9 +91,27 @@ def respond():
             ret['msg'] = clear_tugas(msg, db)
         elif user_mau['lihat_help']:
             ret['msg'] = help_msg(db)
+        elif user_mau['easter_egg']:
+            ret['msg'] = easter_egg()
         else:  # kasih error
             ret['msg'] = handle_bingung()
-    except (ValueError, KeyError, IndexError) as e:
+
+            words = msg.split(' ')
+            done = False
+            for aksi in user_mau.keys():
+                for trigger in triggers[aksi]:
+                    for word in words:
+                        if levenshtein_distance(trigger, word) <= 4:
+                            ret['msg'] = f'Apakah maksudmu:\n\
+                                    "{msg.replace(word, trigger)}?"'
+                            done = True
+                            break
+                    if done:
+                        break
+                if done:
+                    break
+
+   except (ValueError, KeyError, IndexError) as e:
         print(e)
         ret['msg'] = handle_bingung()
 

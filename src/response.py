@@ -415,9 +415,9 @@ def lihat_tugas(msg: str, db) -> str:
         i += 1
 
     if i == 1:
-        res = 'Ga ada deadline yang akan datang'
+        res = 'Ga ada deadline yang akan datang\n'
 
-    return res
+    return res[:-1]
 
 
 def lihat_deadline(msg: str, db) -> str:
@@ -529,6 +529,12 @@ def tambah_tugas(msg: str, db) -> str:
 
     print(ret)
     return ret
+
+
+def easter_egg():
+    return '''Tubes 3 Stima...........Tubes 3 Stima Tubes 3 Stima AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA ❤️ ❤️ ❤️ WANGI WANGI WANGI WANGI HU HA HU HA HU HA, aaaah baunya Tubes 3 Stima wangi aku mau nyiumin aroma wanginya Tubes 3 Stima AAAAAAAAH ~ chatbot.... aaah chatbot juga pengen aku endus-endus ~~~~ AAAAAH Tubes 3 Stima keluar pertama kali di http://informatika.stei.itb.ac.id/~rinaldi.munir/Stmik/2020-2021/stima20-21.htm juga CANTIK BANGETTTT ❤️ ❤️ ❤️ deadline dia itu juga CANTIK BANGET AAAAAAAAH Tubes 3 Stima CANTIIIIIIIIIIIIIIIIIIIIIIIIIIIKKKKKKK............ ❤️ ❤️ ❤️ 
+ apa ? Tubes 3 Stima itu gak nyata ? Cuma karakter 2 dimensi katamu ? nggak, ngak ngak ngak ngak NGAAAAAAAAK GUA GAK PERCAYA ITU DIA NYATA NGAAAAAAAAAAAAAAAAAK PEDULI *********** !! GUA GAK PEDULI SAMA KENYATAAN POKOKNYA GAK PEDULI. ❤️ ❤️ ❤️ 
+ Tubes 3 Stima ngeliat gw ... Tubes 3 Stima di hp bicara am gw Tubes 3 Stima... kamu percaya sama aku ? aaaaaaaaaaah syukur Tubes 3 Stima gak mau merelakan aku AAAAAAHHHH ❤️ ❤️ ❤️ YEAAAAAAAAAAAH GUA MASIH PUNYA Tubes 3 Stima, SENDIRI PUN NGGAK MASALAH AAAAAAAAAAAAAAH BOTWANGY KIRIMKANLAH CINTAKU PADA Tubes 3 Stima KIRIMKAN KE ASISTEN IRK AAAAAAAAH ❤️ ❤️ ❤️'''
 
 
 def update_tugas(msg: str, db) -> str:
@@ -651,19 +657,18 @@ def help_msg(db) -> str:
     ret += '\n'
     ret += '[Fitur]\n'
     ret += '1. Menambahkan tasks baru.\n'
-    ret += 'Kata kunci (tanpa "): \n'
+    ret += f'Kata kunci: {keywords["tambah_task"]}\n'
     ret += '2. Melihat daftar tasks yang harus dikerjakan.\n'
-    ret += 'Kata kunci (tanpa "): "apa saja"\n'
+    ret += f'Kata kunci: {keywords["lihat_task"]}\n'
     ret += '3. Menampilkan deadline dari suatu task tertentu.\n'
-    ret += 'Kata kunci (tanpa "): "kapan"\n'
+    ret += f'Kata kunci: {keywords["lihat_deadline"]}\n'
     ret += '4. Memperbarui task tertentu.\n'
-    ret += 'Kata kunci (tanpa "): \n'
+    ret += f'Kata kunci: {keywords["update_task"]}\n'
     ret += '5. Menandai bahwa suatu task sudah selesai dikerjakan.\n'
-    ret += 'Kata kunci (tanpa "): \n'
+    ret += f'Kata kunci: {keywords["nandain_task_selesai"]}\n'
     ret += '6. Menampilkan opsi help yang difasilitasi oleh assistant.\n'
-    ret += 'Kata kunci (tanpa "): \n'
+    ret += f'Kata kunci: {keywords["lihat_help"]}\n'
     ret += '7. Mendefinisikan list kata penting terkait tugas.\n'
-    ret += 'Kata kunci (tanpa "): "tolong", "help", "助けて", "tasukete"\n'
     ret += '8. Menampilkan pesan error ketika tidak mengenali query user\n'
     ret += '\n'
     ret += '[Kata kunci tugas]\n'

@@ -88,7 +88,7 @@ def boyer_moore(text: str, pattern: str) -> int:
     return -1
 
 
-def levenshtein_distance(s1: str, s2: str, i: int, j: int) -> int:
+def levenshtein_distance(s1: str, s2: str) -> int:
     '''
     Fungsi untuk menghitung jarak levenshtein antara 2 string.
 
@@ -113,18 +113,35 @@ def levenshtein_distance(s1: str, s2: str, i: int, j: int) -> int:
     >>> levenshtein_distance(s1='kitten', i=0, s2='sitting', j=0)
     3
     '''
-    if i == 0 or j == 0:
-        return max(i, j)
+    s1 = '\0' + s1
+    s2 = '\0' + s2
+    len_s1 = len(s1)
+    len_s2 = len(s2)
+    ret = [[None for _ in s2] for _ in s1]
 
-    s1 = '\0' + s1 if s1[0] != '\0' else s1
-    s2 = '\0' + s2 if s2[0] != '\0' else s2
-    ret = [[0 for _ in s2] for _ in s1]
+    def fill(i: int, j: int):
+        if min(i, j) == 0:
+            return max(i, j)
+        if ret[i][j] is not None:
+            return ret[i][j]
+
+        case_1 = fill(i - 1, j) + 1
+        case_2 = fill(i, j - 1) + 1
+        case_3 = fill(i - 1, j - 1) +\
+            (1 if s1[i] != s2[j] else 0)
+
+        return min(case_1, case_2, case_3)
+
+    s1_idx = 1
+    while s1_idx < len_s1:
+        s2_idx = 1
+        while s2_idx < len_s2:
+            ret[s1_idx][s2_idx] = fill(s1_idx, s2_idx)
+            s2_idx += 1
+        s1_idx += 1
 
     return ret[-1][-1]
 
 
 if __name__ == '__main__':
-    text = 'HERE IS A SIMPLE EXAMPLE'
-    idx = boyer_moore(text=text, pattern='EXAMPLE')
-    print(idx)
-    print(levenshtein_distance(s1='kitten', i=1, s2='sitting', j=1))
+    print(levenshtein_distance(s1='sitting', s2='kitten'))
