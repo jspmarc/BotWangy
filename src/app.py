@@ -9,7 +9,7 @@ from firebase_admin import credentials
 from firebase_admin import firestore
 # others
 import re
-from matching import boyer_moore
+from matching import boyer_moore, levenshtein_distance
 from response import (
     lihat_tugas,
     update_tugas,
@@ -105,6 +105,21 @@ def respond():
             ret['msg'] = easter_egg()
         else:  # kasih error
             ret['msg'] = handle_bingung()
+            words = msg.split(' ')
+            done = False
+            for aksi in user_mau.keys():
+                for trigger in triggers[aksi]:
+                    for word in words:
+                        if levenshtein_distance(trigger, word) <= 4:
+                            ret['msg'] = f'Apakah maksudmu:\n\
+                                    "{msg.replace(word, trigger)}?"'
+                            done = True
+                            break
+                    if done:
+                        break
+                if done:
+                    break
+
     except ValueError or KeyError or IndexError:
         ret['msg'] = handle_bingung()
 
