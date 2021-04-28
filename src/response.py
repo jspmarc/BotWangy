@@ -332,9 +332,6 @@ def lihat_tugas(msg: str, db) -> str:
     for tugas in all_tugas:
         tugas_dict = tugas.to_dict()
 
-        if (tugas_dict['selesai']):
-            continue
-
         # Tentuin user-nya mau jenis task (tugas) tertentu atau nggak
         jenis_tugas_permintaan = extract_jenis(msg, db)
         if len(jenis_tugas_permintaan) != 0\
@@ -457,8 +454,7 @@ def lihat_deadline(msg: str, db) -> str:
     for tugas in all_tugas:
         tugas = tugas.to_dict()
         if tugas['jenis'] != jenis_tugas_request\
-           or tugas['id_matkul'] != id_matkul_request\
-           or tugas['selesai']:
+           or tugas['id_matkul'] != id_matkul_request:
             continue
         deadline_dirty = tugas['deadline']
         deadline = datetime(
@@ -510,7 +506,6 @@ def tambah_tugas(msg: str, db) -> str:
         u'deadline': date,
         u'id_matkul': course_id,
         u'jenis': jenis,
-        u'selesai': False,
         u'topik': topic
     }
 
@@ -556,9 +551,7 @@ def update_tugas(msg: str, db) -> str:
     tugas_found = False
     for tugas in all_tugas:
         if task_id == tugas.id:
-            # tugas_dict = tugas.to_dict()
-            tugas_ref = all_tugas_ref.document(tugas.id)
-            tugas_ref.update({u'deadline': date})
+            tugas.reference.update({u'deadline': date})
             tugas_found = True
             break
 
@@ -582,10 +575,7 @@ def clear_tugas(msg: str, db) -> str:
     tugas_found = False
     for tugas in all_tugas:
         if task_id == tugas.id:
-            tugas_ref = all_tugas_ref.document(tugas.id)
-            tugas_ref.update({
-                'selesai': True
-            })
+            tugas.reference.delete()
             tugas_found = True
             break
 
@@ -599,7 +589,7 @@ def clear_tugas(msg: str, db) -> str:
 
 
 def extract_task_id(msg: str) -> str:
-    matches = re.findall(r'[a-zA-Z0-9]{15}', msg, flags=re.IGNORECASE)
+    matches = re.findall(r'\d+', msg, flags=re.IGNORECASE)
 
     try:
         res = matches[0]
