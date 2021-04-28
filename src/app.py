@@ -75,6 +75,9 @@ def respond():
         user_mau[aksi] = tentuin_mau_apa(aksi, triggers[aksi])
         tau_mau_ngapain = user_mau[aksi]
 
+    if not tau_mau_ngapain:
+        user_mau['tambah_task'] = True
+
     # Untuk di-return ke front-end, harus memiliki 'msg'
     ret = dict()
 
@@ -101,7 +104,7 @@ def respond():
             for aksi in user_mau.keys():
                 for trigger in triggers[aksi]:
                     for word in words:
-                        if levenshtein_distance(trigger, word) <= 4:
+                        if levenshtein_distance(trigger, word) <= 3:
                             ret['msg'] = f'Apakah maksudmu:\n\
                                     "{msg.replace(word, trigger)}?"'
                             done = True
@@ -110,8 +113,7 @@ def respond():
                         break
                 if done:
                     break
-
-   except (ValueError, KeyError, IndexError) as e:
+    except (ValueError, KeyError, IndexError) as e:
         print(e)
         ret['msg'] = handle_bingung()
 

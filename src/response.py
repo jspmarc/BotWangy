@@ -56,11 +56,11 @@ def extract_date(msg: str) -> 'list[datetime]':
 
     Examples
     --------
-    >>> get_date('tanggal 27-April/2021')
+    >>> extract_date('tanggal 27-April/2021')
     [datetime.datetime(2021, 4, 27, 0, 0)]
-    >>> get_date('tanggal 27/04-21')
+    >>> extract_date('tanggal 27/04-21')
     [datetime.datetime(2021, 4, 27, 0, 0)]
-    >>> get_date('tanggal 27-04 21')
+    >>> extract_date('tanggal 27-04 21')
     [datetime.datetime(2021, 4, 27, 0, 0)]
     '''
     month_regex =\
@@ -539,25 +539,23 @@ def easter_egg():
 
 def update_tugas(msg: str, db) -> str:
     task_id = extract_task_id(msg)
-    date = extract_date(msg)[0]
+    date_list = extract_date(msg)
+    print(task_id, date_list)
     # Kasus tidak dituliskan ID dari tugas yang ingin diundur deadlinenya
-    if (len(task_id) == 0) or (len(date) == 0):
-        raise ValueError
+    if task_id is None or len(date_list) == 0:
+        return f'{"ID Tugas" if task_id is None else "Tanggal"} kamu salah'
 
-    tugas_ref = db.collection(u'tugas')
-    all_tugas = tugas_ref.stream()
+    date = date_list[0]
+
+    all_tugas_ref = db.collection(u'tugas')
+    all_tugas = all_tugas_ref.stream()
     tugas_found = False
     for tugas in all_tugas:
-        ada_tugasnya = task_id == str(tugas.id)
-        if ada_tugasnya:
+        if task_id == tugas.id:
             # tugas_dict = tugas.to_dict()
-            # deadline_baru = get_date(msg)
-            tugas_ref.document(u'{}'.format(task_id))
+            tugas_ref = all_tugas_ref.document(tugas.id)
             tugas_ref.update({u'deadline': date})
             tugas_found = True
-            # TODO: ganti tanggal deadline tugas = date
-
-            # id_clear_tugas = tugas.id
             break
 
     if tugas_found:
@@ -572,22 +570,19 @@ def update_tugas(msg: str, db) -> str:
 def clear_tugas(msg: str, db) -> str:
     task_id = extract_task_id(msg)
     # Kasus tidak dituliskan ID dari tugas yang ingin ditandai selesai
-    if len(task_id) == 0:
-        raise ValueError
-        return ''
+    if task_id is None:
+        return 'ID tugas kamu salah'
 
-    tugas_ref = db.collection(u'tugas')
-    all_tugas = tugas_ref.stream()
+    all_tugas_ref = db.collection(u'tugas')
+    all_tugas = all_tugas_ref.stream()
     tugas_found = False
     for tugas in all_tugas:
-        tugas_dict = tugas.to_dict()
-        ada_tugasnya = task_id == str(tugas.id)
-        if ada_tugasnya:
-            # tugas_dict['selesai'] = True
-            tugas_ref.document(u'{}'.format(task_id))
-            tugas_ref.update({u'selesai': True})
+        if task_id == tugas.id:
+            tugas_ref = all_tugas_ref.document(tugas.id)
+            tugas_ref.update({
+                'selesai': True
+            })
             tugas_found = True
-            # id_clear_tugas = tugas.id
             break
 
     if tugas_found:
@@ -623,7 +618,7 @@ def extract_course_id(msg: str) -> str:
 
 
 def extract_task_id(msg: str) -> str:
-    matches = re.findall(r'\d', msg, flags=re.IGNORECASE)
+    matches = re.findall(r'[a-zA-Z0-9]{15}', msg, flags=re.IGNORECASE)
 
     try:
         res = matches[0]
