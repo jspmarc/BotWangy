@@ -283,6 +283,7 @@ def lihat_tugas(msg: str, db) -> str:
         'ke depan',
         'berikutnya',
         'lagi',
+        'selanjutnya',
     ]
 
     trigger_tanggal_range_dari = [
@@ -324,16 +325,51 @@ def lihat_tugas(msg: str, db) -> str:
 
     if not pake_tanggal_range:
         for trigger in trigger_tanggal_satuan:
-            pake_tanggal_satuan = boyer_moore(text=msg, pattern=trigger) != -1
-            if pake_tanggal_satuan:
-                break
+            if boyer_moore(text=msg, pattern=trigger) != -1:
+                pake_tanggal_satuan = True
+                trigger_periode = [
+                    'hari',
+                    'minggu',
+                    'bulan',
+                    'tahun',
+                ]
+
+                for trigger in trigger_periode:
+                    idx_periode = boyer_moore(text=msg, pattern=trigger)
+                    if idx_periode != -1:
+                        periode = trigger
+                        break
+
+                if idx_periode == -1:
+                    return 'Durasi waktu kamu salah'
+
+                try:
+                    durasi = int(re.findall(r'\d+', msg[:idx_periode])[0])
+                except IndexError:
+                    return 'Durasi waktu kamu salah'
+
+                if periode == 'minggu':
+                    durasi *= 7
+                elif periode == 'bulan':
+                    durasi *= 30
+                elif periode == 'tahun':
+                    durasi *= 365
+
+    else:
+        try:
+            date1, date2, *_ = extract_date(msg)
+            if date1 > date2:
+                return 'Jarak tanggal kamu salah'
+        except ValueError:
+            return 'Penulisan tanggal kamu salah'
+
+    # Tentuin user-nya mau jenis task (tugas) tertentu atau nggak
+    jenis_tugas_permintaan = extract_jenis(msg, db)
 
     i = 1
     for tugas in all_tugas:
         tugas_dict = tugas.to_dict()
 
-        # Tentuin user-nya mau jenis task (tugas) tertentu atau nggak
-        jenis_tugas_permintaan = extract_jenis(msg, db)
         if len(jenis_tugas_permintaan) != 0\
                 and tugas_dict['jenis'] != jenis_tugas_permintaan:
             continue
@@ -351,47 +387,15 @@ def lihat_tugas(msg: str, db) -> str:
         deadline_str = deadline.strftime('%Y-%m-%d')
 
         # cek tanggal permintaan user
+        # print(date1, deadline, date2)
         if pake_tanggal_satuan:
-            trigger_periode = [
-                'hari',
-                'minggu',
-                'bulan',
-                'tahun',
-            ]
-
-            for trigger in trigger_periode:
-                idx_periode = boyer_moore(text=msg, pattern=trigger)
-                if idx_periode != -1:
-                    periode = trigger
-                    break
-
-            if idx_periode == -1:
-                return 'Durasi waktu kamu salah'
-
-            try:
-                durasi = int(re.findall(r'\d+', msg[:idx_periode])[0])
-            except IndexError:
-                return 'Durasi waktu kamu salah'
-
-            if periode == 'minggu':
-                durasi *= 7
-            elif periode == 'bulan':
-                durasi *= 30
-            elif periode == 'tahun':
-                durasi *= 365
-
             # Tetep tunjukin tugas yang udah lewat deadline
-            now = datetime.now().replace(microsecond=0)
+            print(durasi)
+            now = datetime.now().replace(hour=23, minute=59, second=59, microsecond=0)
             if deadline > now + timedelta(days=durasi):
                 continue
-
         elif pake_tanggal_range:
-            try:
-                date1, date2, *_ = extract_date(msg)
-            except ValueError:
-                return 'Penulisan tanggal kamu salah'
-
-            if deadline <= date1 or deadline >= date2:
+            if deadline < date1 or deadline > date2:
                 # Deadline di luar permintaan user
                 continue
 
