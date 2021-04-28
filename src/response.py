@@ -157,8 +157,6 @@ def extract_jenis(msg: str, db) -> str:
                 match = 'tucil'
             elif match[1] == 'tugas besar':
                 match = 'tubes'
-            elif match[1] == 'quiz':
-                match = 'kuis'
             else:
                 match = ''
         else:
@@ -167,6 +165,55 @@ def extract_jenis(msg: str, db) -> str:
         match = ''
 
     return match
+
+
+def extract_course_id(msg: str) -> str:
+    '''
+    Fungsi untuk mendapatkan kode mata kuliah
+
+    Parameters
+    ----------
+    msg : str
+        pesan/message dari user
+
+    Returns
+    -------
+    str
+        kode mata kuliah (ITB)
+    '''
+    matches = re.findall(r'[a-zA-Z]{2}\d{4}', msg, flags=re.IGNORECASE)
+
+    try:
+        res = matches[0]
+    except IndexError:
+        res = None
+    return res
+
+
+def extract_topic(msg: str):
+    '''
+    Fungsi untuk mencari topic yang terletak
+    antara tanda kutip
+
+    Parameters
+    ----------
+    msg : str
+        pesan/message dari user
+
+    Returns
+    -------
+    str
+        topic
+
+    Throws
+    ------
+    ValueError
+        Kalau message tidak memiliki kode mata kuliah
+    '''
+    topic = re.findall(r'"\w+"', msg)
+    if len(topic) == 0:
+        raise ValueError
+    return topic[0]
 
 
 def load_keywords(db) -> 'dict[str, list[str]]':
@@ -444,27 +491,40 @@ def tambah_tugas(msg: str, db) -> str:
 
     Throws
     ------
-    IndexError
-        Kalau tidak punya tanggal
+    ValueError
+        Jika msg kurang 1 atau lebih komponen
+        (tanggal, kode mata kuliah, jenis, topik tugas)
     '''
     # tanggal, kode mk, jenis tugas, topik tugas
-    with_date = False
-    with_course_id = False
-    with_jenis_tugas = False
-    with_topic = False
-
     date = extract_date(msg)[0]
-    with_date = True
-
     course_id = extract_course_id(msg)
-    with_course_id = course_id is not None
+    jenis = extract_jenis(msg, db)
+    topic = extract_topic(msg)
 
-    for triggers in trigger_jenis_tugas:
-        with_jenis_tugas = boyer_moore(text=msg, pattern=triggers) != -1
-        if with_jenis_tugas:
-            break
+    if course_id is None or jenis == '':
+        raise ValueError
 
-    return ''
+    tugas_ref = db.collection(u'tugas')
+    id = str(len(tugas_ref))
+
+    data = {
+        u'deadline' = date,
+        u'id_matkul' = course_id,
+        u'jenis' = jenis,
+        u'selesai' = False,
+        u'topik' = topic
+    }
+
+    ret =  '[Task berhasil dicatat]'
+    ret += f'\nID: {id}'
+    ret += f'\nMatkul: {course_id}'
+    ret += f'\nDeadline (yyyy/mm/dd): {date.strftime('%Y-%m-%d')}'
+    ret += f'\nJenis: {jenis}'
+    ret += f'\nTopik: {topic}'
+
+    db.collection(u'tugas').document(u'id').set(data)
+
+    return ret
 
 
 def update_tugas(msg: str, db) -> str:
@@ -473,7 +533,6 @@ def update_tugas(msg: str, db) -> str:
     # Kasus tidak dituliskan ID dari tugas yang ingin diundur deadlinenya
     if (len(task_id) == 0) or (len(date) == 0):
         raise ValueError
-        return ''
 
     tugas_ref = db.collection(u'tugas')
     all_tugas = tugas_ref.stream()
