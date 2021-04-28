@@ -10,7 +10,6 @@ Josep Marcello / 13519164
 
 from datetime import datetime, timedelta
 from matching import boyer_moore
-import hashlib
 import re
 
 
@@ -499,7 +498,7 @@ def tambah_tugas(msg: str, db) -> str:
         (tanggal, kode mata kuliah, jenis, topik tugas)
     '''
     date = extract_date(msg)[0]
-    course_id = extract_course_id(msg)
+    course_id = extract_course_id(msg).upper()
     jenis = extract_jenis(msg, db)
     topic = extract_topic(msg)
     if course_id is None or jenis == '' or topic is None:
@@ -515,8 +514,11 @@ def tambah_tugas(msg: str, db) -> str:
         u'topik': topic
     }
 
-    hash_id = hashlib.sha1((tanggal + course_id + jenis + topic).encode())
-    id_task = hash_id.hexdigest()[:15]
+    tugas_ref = db.collection(u'tugas')
+    all_tugas = tugas_ref.stream()
+
+    for tugas in all_tugas:
+        id_task = str(int(tugas.id) + 1)
 
     ret =  '[Task berhasil dicatat]'
     ret += f'\nID: {id_task}'
@@ -527,7 +529,6 @@ def tambah_tugas(msg: str, db) -> str:
 
     db.collection(u'tugas').document(id_task).set(data)
 
-    print(ret)
     return ret
 
 
@@ -594,29 +595,6 @@ def clear_tugas(msg: str, db) -> str:
         res = "Tugas " + task_id + " tidak terdapat dalam daftar tugas"
     # TODO: Write ke firebase db
 
-    return res
-
-
-def extract_course_id(msg: str) -> str:
-    '''
-    Fungsi untuk mendapatkan id matkul dari message user. Jika di message tidak
-    ada, maka akan dikembalikan None
-
-    Parameters
-    ----------
-    msg : str
-        message user
-
-    Returns
-    -------
-    ID matkul dari pesan user jika ada, selain itu None
-    '''
-    matches = re.findall(r'[a-zA-Z]{2}\d{4}', msg, flags=re.IGNORECASE)
-
-    try:
-        res = matches[0].upper()
-    except IndexError:
-        res = None
     return res
 
 
