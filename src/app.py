@@ -10,7 +10,8 @@ from firebase_admin import firestore
 # others
 import re
 from matching import boyer_moore
-from response import lihat_tugas, handle_bingung, help_msg #, tambah_tugas
+from response import lihat_tugas, handle_bingung, help_msg, update_tugas, clear_tugas
+# , tambah_tugas
 
 app = Flask(__name__)
 
@@ -47,8 +48,12 @@ def respond():
     triggers['lihat_deadline'] = [
         'kapan',
     ]
-    triggers['update_task'] = []
-    triggers['nandain_task_selesai'] = []
+    triggers['update_task'] = [
+        'diundur',
+    ]
+    triggers['nandain_task_selesai'] = [
+        'selesai',
+    ]
     triggers['lihat_help'] = [
         'help',
         'tolong',
@@ -98,15 +103,14 @@ def respond():
         elif user_mau['lihat_deadline']:
             pass
         elif user_mau['update_task']:
-            # ret['msg'] = tambah_tugas(msg, db)
-            pass
+            ret['msg'] = update_tugas(msg, db)
         elif user_mau['nandain_task_selesai']:
-            pass
+            ret['msg'] = clear_tugas(msg, db)
         elif user_mau['lihat_help']:
             ret['msg'] = help_msg(db)
         else:  # kasih error
             ret['msg'] = handle_bingung()
-    except ValueError, KeyError, IndexError:
+    except ValueError or KeyError or IndexError:
         ret['msg'] = handle_bingung()
 
     return jsonify(ret)

@@ -227,7 +227,7 @@ def lihat_tugas(msg: str, db) -> str:
     '''
     def fail(saat: str) -> str:
         '''
-        Melakukan subroutine ketika menjadi kegagalan
+        Melakukan subroutine ketika terjadi kegagalan
 
         Returns
         -------
@@ -451,12 +451,81 @@ def tambah_tugas(msg: str, db) -> str:
         with_jenis_tugas = boyer_moore(text=msg, pattern=triggers) != -1
         if with_jenis_tugas:
             break
-    
+
     return ''
+
+
+def update_tugas(msg: str, db) -> str:
+    task_id = extract_task_id(msg)
+    date = extract_date(msg)[0]
+    # Kasus tidak dituliskan ID dari tugas yang ingin diundur deadlinenya
+    if (len(task_id) == 0) or (len(date) == 0):
+        raise ValueError
+        return ''
+
+    tugas_ref = db.collection(u'tugas')
+    all_tugas = tugas_ref.stream()
+    tugas_found = False
+    for tugas in all_tugas:
+        ada_tugasnya = task_id == str(tugas.id)
+        if ada_tugasnya:
+            tugas_dict = tugas.to_dict()
+            # deadline_baru = get_date(msg)
+            tugas_found = True
+            # TODO: ganti tanggal deadline tugas = date
+
+            # id_clear_tugas = tugas.id
+            break
+
+    if tugas_found:
+        res = "Deadline tugas " + task_id + " berhasil diundur"
+    else:
+        res = "Tugas " + task_id + " tidak terdapat dalam daftar tugas"
+    # TODO: Write ke firebase db
+
+    return res
+
+
+def clear_tugas(msg: str, db) -> str:
+    task_id = extract_task_id(msg)
+    # Kasus tidak dituliskan ID dari tugas yang ingin ditandai selesai
+    if len(task_id) == 0:
+        raise ValueError
+        return ''
+
+    tugas_ref = db.collection(u'tugas')
+    all_tugas = tugas_ref.stream()
+    tugas_found = False
+    for tugas in all_tugas:
+        tugas_dict = tugas.to_dict()
+        ada_tugasnya = task_id == str(tugas.id)
+        if ada_tugasnya:
+            tugas_dict['selesai'] = True
+            tugas_found = True
+            # id_clear_tugas = tugas.id
+            break
+
+    if tugas_found:
+        res = "Tugas " + task_id + " berhasil ditandai selesai"
+    else:
+        res = "Tugas " + task_id + " tidak terdapat dalam daftar tugas"
+    # TODO: Write ke firebase db
+
+    return res
 
 
 def extract_course_id(msg: str) -> str:
     matches = re.findall(r'[a-zA-Z]{2}\d{4}', msg, flags=re.IGNORECASE)
+
+    try:
+        res = matches[0]
+    except IndexError:
+        res = None
+    return res
+
+
+def extract_task_id(msg: str) -> str:
+    matches = re.findall(r'\d', msg, flags=re.IGNORECASE)
 
     try:
         res = matches[0]
