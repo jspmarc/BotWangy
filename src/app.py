@@ -39,7 +39,7 @@ def home(path):
 def respond():
     # asumsi msg udah dibersihin dari front-end
     msg = str(request.args.get('msg')).lower()
-    msg = re.sub(r'[^\s\w:./,\-]', '', msg)
+    msg = re.sub(r'[^\s\w:./,\-"]', '', msg)
     msg = re.sub(r'\s{2,}', '', msg)
 
     user_mau = {}
@@ -75,16 +75,6 @@ def respond():
         user_mau[aksi] = tentuin_mau_apa(aksi, triggers[aksi])
         tau_mau_ngapain = user_mau[aksi]
 
-    '''
-    # # Tentuin mau tambah apa bukan, harus yang terakhir
-    if not tau_mau_ngapain:
-        triggers = [
-            'ingatkan',
-            'tambahkan'
-        ]
-        user_mau['tambah_task'] = True
-    '''
-
     # Untuk di-return ke front-end, harus memiliki 'msg'
     ret = dict()
 
@@ -106,7 +96,8 @@ def respond():
         else:  # kasih error
             ret['msg'] = handle_bingung()
 
-    except ValueError or KeyError or IndexError:
+    except (ValueError, KeyError, IndexError) as e:
+        print(e)
         ret['msg'] = handle_bingung()
 
     return jsonify(ret)
