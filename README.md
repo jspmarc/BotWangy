@@ -1,5 +1,8 @@
 # Bot Wangy
-bot serba pintar dalam mencatat tugas IF ITB
+
+# General Info
+Deadline reminder assistant dalam bentuk chatbot
+Menerapkan string matching dan regular expression
 
 ## Cara deploy:
 1. `cd src/view`
@@ -35,6 +38,18 @@ Sekarang perubahan pada file `app.py` ataupun file Svelte akan otomatis berubah.
    Digunakan untuk frontend (Svelte). Dependencies dapat dilihat pada
    [src/view/package.json](src/view/package.json). Dependencies akan otomatis
    diinstall oleh Node.js.
+
+## Features
+1. Menambahkan tugas baru
+2. Melihat daftar tugas yang dikerjakan
+3. Menampilkan deadline dari suatu tugas tertentu
+4. Memperbarui deadline tugas tertentu
+5. Menandai suatu tugas sudah selesai dikerjakan
+6. Menampilkan opsi help yang difasilitasi oleh assistant
+7. Merekomendasikan kata ketika pengguna melakukan saltik
+
+## Status
+Finished
 
 ### Credits:
 | nama | NIM |
