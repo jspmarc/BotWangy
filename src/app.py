@@ -89,18 +89,25 @@ def respond():
     try:
         if user_mau['tambah_task']:
             ret['msg'] = tambah_tugas(msg, db)
+            print('User menambahkan task')
         elif user_mau['lihat_task']:
             ret['msg'] = lihat_tugas(msg, db)
+            print('User melihat task')
         elif user_mau['lihat_deadline']:
             ret['msg'] = lihat_deadline(msg, db)
+            print('User melihat deadline')
         elif user_mau['update_task']:
             ret['msg'] = update_tugas(msg, db)
+            print('User update task')
         elif user_mau['nandain_task_selesai']:
             ret['msg'] = clear_tugas(msg, db)
+            print('User menyelesaikan task')
         elif user_mau['lihat_help']:
             ret['msg'] = help_msg(db)
+            print('User melihat help')
         elif user_mau['easter_egg']:
             ret['msg'] = easter_egg()
+            print('User melihat easter egg')
         else:  # kasih error
             ret['msg'] = handle_bingung()
 
@@ -111,7 +118,7 @@ def respond():
                     for word in words:
                         if levenshtein_distance(trigger, word) <= 3:
                             ret['msg'] = f'Apakah maksudmu:\n\
-                                    "{msg.replace(word, trigger)}?"'
+                                    "{msg.replace(word, trigger)}"?'
                             done = True
                             break
                     if done:
@@ -122,6 +129,7 @@ def respond():
         print(e)
         ret['msg'] = handle_bingung()
 
+    print(ret['msg'])
     return jsonify(ret)
 
 

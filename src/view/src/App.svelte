@@ -36,15 +36,15 @@
         .then(res => res.json())
         .then(res => {
             msgText = res.msg.replace(/\n/g, "<br />");
+
+            setTimeout(() => {
+                appendMessage(BOT_NAME, BOT_IMG, "left", msgText);
+            }, 500);
         })
         .catch(err => {
             console.log(err);
             msgText = 'Maaf, aku ga paham kamu ngomong apa 😟';
         });
-
-        setTimeout(() => {
-            appendMessage(BOT_NAME, BOT_IMG, "left", msgText);
-        }, 500);
     }
 
     // Utils

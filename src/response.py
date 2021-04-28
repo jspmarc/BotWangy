@@ -599,6 +599,7 @@ def extract_task_id(msg: str) -> str:
 
 
 def handle_bingung():
+    print('Bot bingung')
     return 'Maaf, aku ga paham kamu ngomong apa 😵'
 
 
