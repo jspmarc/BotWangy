@@ -10,7 +10,15 @@ from firebase_admin import firestore
 # others
 import re
 from matching import boyer_moore
-from response import lihat_tugas, handle_bingung, help_msg #, tambah_tugas
+from response import lihat_tugas, handle_bingung, help_msg, lihat_deadline,\
+                     load_keywords  #, tambah_tugas
+from response import (
+    lihat_tugas,
+    handle_bingung,
+    help_msg,
+    lihat_deadline,
+    # tambah_tugas,
+)
 
 app = Flask(__name__)
 
@@ -40,22 +48,7 @@ def respond():
     user_mau['nandain_task_selesai'] = False
     user_mau['lihat_help'] = False
 
-    triggers = {}
-    triggers['lihat_task'] = [
-        'apa saja',
-    ]
-    triggers['lihat_deadline'] = [
-        'kapan',
-    ]
-    triggers['update_task'] = []
-    triggers['nandain_task_selesai'] = []
-    triggers['lihat_help'] = [
-        'help',
-        'tolong',
-        '助けて',
-        'tasukete',
-    ]
-    triggers['tambah_task'] = []
+    triggers = load_keywords(db)
 
     # Tentuin user mau ngapain
     tau_mau_ngapain = False
@@ -64,6 +57,8 @@ def respond():
         ret = False
         if not tau_mau_ngapain:
             for trigger in triggers:
+                if trigger == '':
+                    continue
                 if boyer_moore(text=msg, pattern=trigger) != -1:
                     user_mau[aksi] = True
                     ret = True
@@ -96,7 +91,7 @@ def respond():
         elif user_mau['lihat_task']:
             ret['msg'] = lihat_tugas(msg, db)
         elif user_mau['lihat_deadline']:
-            pass
+            ret['msg'] = lihat_deadline(msg, db)
         elif user_mau['update_task']:
             # ret['msg'] = tambah_tugas(msg, db)
             pass
@@ -106,7 +101,7 @@ def respond():
             ret['msg'] = help_msg(db)
         else:  # kasih error
             ret['msg'] = handle_bingung()
-    except ValueError, KeyError, IndexError:
+    except ValueError or KeyError or IndexError:
         ret['msg'] = handle_bingung()
 
     return jsonify(ret)
