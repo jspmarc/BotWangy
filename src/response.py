@@ -225,18 +225,6 @@ def lihat_tugas(msg: str, db) -> str:
     ValueError
         Kalau format tanggal pada msg salah
     '''
-    def fail(saat: str) -> str:
-        '''
-        Melakukan subroutine ketika terjadi kegagalan
-
-        Returns
-        -------
-        str
-            Pesan error
-        '''
-        print(f'[List tugas] Error saat {saat}: {msg}')
-        return 'Gagal memehami periode/durasi pesan 😵'
-
     tugas_ref = db.collection(u'tugas')
     all_tugas = tugas_ref.stream()
     res = "[Daftar tugas IF'19]\n"
@@ -300,7 +288,6 @@ def lihat_tugas(msg: str, db) -> str:
 
         # Tentuin user-nya mau jenis task (tugas) tertentu atau nggak
         jenis_tugas_permintaan = extract_jenis(msg, db)
-        print(jenis_tugas_permintaan)
         if len(jenis_tugas_permintaan) != 0\
                 and tugas_dict['jenis'] != jenis_tugas_permintaan:
             continue
@@ -333,12 +320,12 @@ def lihat_tugas(msg: str, db) -> str:
                     break
 
             if idx_periode == -1:
-                return fail('mendapatkan trigger periode')
+                return 'Durasi waktu kamu salah'
 
             try:
                 durasi = int(re.findall(r'\d+', msg[:idx_periode])[0])
             except IndexError:
-                return fail('mendapatkan waktu pada tanggal satuan')
+                return 'Durasi waktu kamu salah'
 
             if periode == 'minggu':
                 durasi *= 7
@@ -356,7 +343,8 @@ def lihat_tugas(msg: str, db) -> str:
             try:
                 date1, date2, *_ = extract_date(msg)
             except ValueError:
-                return fail('mendapatkan tanggal pada tanggal range')
+                return 'Penulisan tanggal kamu salah'
+
             if deadline <= date1 or deadline >= date2:
                 # Deadline di luar permintaan user
                 continue
@@ -371,10 +359,13 @@ def lihat_tugas(msg: str, db) -> str:
         space_4 = '    '
         res += f'{i}. ID: {tugas.id}'
         res += f'\n{space_4}Matkul: {tugas_dict["id_matkul"]}'
-        res += f'\n{space_4}Deadline (yyyy/mm/dd): {deadline_str}'
+        res += f'\n{space_4}Deadline (yyyy-mm-dd): {deadline_str}'
         res += f'\n{space_4}{jenis}: {tugas_dict["topik"]}'
         res += '\n\n'
         i += 1
+
+    if i == 1:
+        res = 'Ga ada deadline yang akan datang'
 
     return res
 
@@ -402,14 +393,35 @@ def lihat_deadline(msg: str, db) -> str:
     ValueError
         Kalau format tanggal pada msg salah
     '''
-    ret = 'aku ganteng'
-    '''
-    Contoh query:
-    'Deadlline tugas IF2211 itu kapan?'
-    Langkah-langkah:
-    1. Cari nama matkulnya
-    2. Cari jenisnya
-    '''
+    id_matkul_request = extract_course_id(msg)
+    if id_matkul_request is None:
+        return 'ID Matkul ga ada atau salah'
+    jenis_tugas_request = extract_jenis(msg, db)
+    if jenis_tugas_request == '':
+        return 'Jenis tugas salah'
+
+    ret = f'Deadline {jenis_tugas_request} {id_matkul_request}:\n'
+    tugas_ref = db.collection(u'tugas')
+    all_tugas = tugas_ref.stream()
+
+    i = 1
+    for tugas in all_tugas:
+        tugas = tugas.to_dict()
+        if tugas['jenis'] != jenis_tugas_request\
+           or tugas['id_matkul'] != id_matkul_request\
+           or tugas['selesai']:
+            continue
+        deadline_dirty = tugas['deadline']
+        deadline = datetime(
+            day=deadline_dirty.day,
+            month=deadline_dirty.month,
+            year=deadline_dirty.year
+        ).strftime('%Y-%m-%d')
+        ret += f'{i}. {deadline}\n'
+        i += 1
+
+    if i == 1:
+        ret = f'Tidak ada deadline untuk {jenis_tugas_request} matkul {id_matkul_request}.'
     return ret
 
 
@@ -515,10 +527,23 @@ def clear_tugas(msg: str, db) -> str:
 
 
 def extract_course_id(msg: str) -> str:
+    '''
+    Fungsi untuk mendapatkan id matkul dari message user. Jika di message tidak
+    ada, maka akan dikembalikan None
+
+    Parameters
+    ----------
+    msg : str
+        message user
+
+    Returns
+    -------
+    ID matkul dari pesan user jika ada, selain itu None
+    '''
     matches = re.findall(r'[a-zA-Z]{2}\d{4}', msg, flags=re.IGNORECASE)
 
     try:
-        res = matches[0]
+        res = matches[0].upper()
     except IndexError:
         res = None
     return res
