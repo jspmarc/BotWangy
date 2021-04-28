@@ -62,7 +62,7 @@ html, body {
     width: 6px;
 }
 .msger-chat::-webkit-scrollbar-track {
-    background: #ddd;
+    background: #eff2f8;
 }
 .msger-chat::-webkit-scrollbar-thumb {
     background: #bdbdbd;
