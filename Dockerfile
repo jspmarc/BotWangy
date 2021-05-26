@@ -11,13 +11,25 @@ RUN git clone https://github.com/pyenv/pyenv.git /.pyenv
 ENV PYENV_ROOT /.pyenv
 ENV PATH $PYENV_ROOT/shims:$PYENV_ROOT/bin:$PATH
 
-EXPOSE 80
+ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONUNBUFFERED 1
+ENV DEBUG 0
+
+RUN useradd -ms /bin/bash botwangy
 
 COPY src /src
+RUN chown -R root:root /src
+RUN chmod -R 755 /src
+
 WORKDIR /src/view
 RUN npm install
 RUN npm run build
+
 WORKDIR /src
 RUN pipenv lock --keep-outdated --requirements > requirements.txt
 RUN pip install -r requirements.txt
-CMD ["gunicorn", "--bind", ":80", "wsgi:app"]
+
+USER botwangy
+
+# CMD ["gunicorn", "--bind", "0.0.0.0:$PORT", "wsgi:app"]
+CMD gunicorn wsgi:app --bind 0.0.0.0:$PORT
